@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sidegigs Management{% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="https://unpkg.com/alpinejs@3.14.8" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+    {% if app.user %}
+    <nav class="bg-indigo-700 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <a href="{{ path('app_board') }}" class="font-bold text-lg">Sidegigs</a>
+                    <a href="{{ path('app_board') }}" class="hover:text-indigo-200 text-sm">Board</a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_user_list') }}" class="hover:text-indigo-200 text-sm">Users</a>
+                    <a href="{{ path('app_client_list') }}" class="hover:text-indigo-200 text-sm">Clients</a>
+                    <a href="{{ path('app_workflow_edit') }}" class="hover:text-indigo-200 text-sm">Workflow</a>
+                    {% endif %}
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm">{{ app.user.userIdentifier }}</span>
+                    <a href="{{ path('app_profile') }}" class="hover:text-indigo-200 text-sm">Profile</a>
+                    <a href="{{ path('app_logout') }}" class="bg-indigo-500 px-3 py-1 rounded text-sm hover:bg-indigo-600">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div x-data="{ flash: { show: false, message: '', type: 'info' } }" x-init="
+        document.addEventListener('DOMContentLoaded', () => {
+            const msg = document.querySelector('[data-flash-message]');
+            if (msg) {
+                flash.message = msg.dataset.flashMessage;
+                flash.type = msg.dataset.flashType;
+                flash.show = true;
+                setTimeout(() => flash.show = false, 5000);
+            }
+        })
+    ">
+        <template x-if="flash.show">
+            <div class="fixed top-4 right-4 z-50" x-show="flash.show" x-transition>
+                <div class="px-6 py-3 rounded-lg shadow-lg text-white"
+                     :class="flash.type === 'success' ? 'bg-green-500' : flash.type === 'error' ? 'bg-red-500' : 'bg-blue-500'"
+                     x-text="flash.message">
+                </div>
+            </div>
+        </template>
+
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div data-flash-message="{{ message }}" data-flash-type="{{ type }}" style="display:none"></div>
+            {% endfor %}
+        {% endfor %}
+
+        {% block body %}{% endblock %}
+    </div>
+
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

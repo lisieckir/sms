@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block body %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">My Profile</h1>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="mb-6 pb-6 border-b">
+            <p class="text-sm text-gray-500">Logged in as</p>
+            <p class="text-lg font-medium">{{ app.user.userIdentifier }}</p>
+            <p class="text-sm text-gray-500">Roles: {{ app.user.roles|join(', ') }}</p>
+        </div>
+
+        <h2 class="text-lg font-semibold mb-4">Change Password</h2>
+        <form method="post" class="space-y-4">
+            <div>
+                <label for="oldPassword" class="block text-sm font-medium text-gray-700">Current Password</label>
+                <input type="password" id="oldPassword" name="oldPassword" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div>
+                <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
+                <input type="password" id="newPassword" name="newPassword" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <button type="submit"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Change Password</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

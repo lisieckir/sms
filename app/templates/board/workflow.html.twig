@@ -1,0 +1,140 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Workflow Configuration{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Workflow Configuration</h1>
+        <a href="{{ path('app_board') }}" class="text-indigo-600 hover:text-indigo-800">Back to Board</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Stages</h2>
+
+            <form method="post" class="mb-6 flex gap-2">
+                <input type="hidden" name="action" value="add_stage">
+                <input type="text" name="name" placeholder="Stage name" required
+                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <input type="number" name="position" placeholder="Pos" value="0"
+                       class="w-16 px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Add</button>
+            </form>
+
+            {% if workflow.stages is defined and workflow.stages|length > 0 %}
+            <ul class="space-y-2">
+                {% for stage in workflow.stages %}
+                <li class="flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg">
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium text-gray-700">{{ stage.name }}</span>
+                        <span class="text-sm text-gray-500">(pos: {{ stage.position }})</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        {% if not loop.first %}
+                        <form method="post" class="inline">
+                            <input type="hidden" name="action" value="reorder_stage">
+                            <input type="hidden" name="stageId" value="{{ stage.id }}">
+                            <input type="hidden" name="newPosition" value="{{ stage.position - 1 }}">
+                            <button type="submit" class="text-gray-500 hover:text-gray-700 p-1" title="Move up">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% if not loop.last %}
+                        <form method="post" class="inline">
+                            <input type="hidden" name="action" value="reorder_stage">
+                            <input type="hidden" name="stageId" value="{{ stage.id }}">
+                            <input type="hidden" name="newPosition" value="{{ stage.position + 1 }}">
+                            <button type="submit" class="text-gray-500 hover:text-gray-700 p-1" title="Move down">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                        </form>
+                        {% endif %}
+                        <form method="post" class="inline ml-1" onsubmit="return confirm('Remove this stage?')">
+                            <input type="hidden" name="action" value="remove_stage">
+                            <input type="hidden" name="stageId" value="{{ stage.id }}">
+                            <button type="submit" class="text-red-500 hover:text-red-700 p-1" title="Remove">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-gray-500">No stages defined.</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Transitions</h2>
+
+            <form method="post" class="mb-6 space-y-2">
+                <input type="hidden" name="action" value="add_transition">
+                <div class="flex gap-2">
+                    <select name="fromStageId" required
+                            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">From stage</option>
+                        {% for stage in workflow.stages %}
+                        <option value="{{ stage.id }}">{{ stage.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="self-center text-gray-400">→</span>
+                    <select name="toStageId" required
+                            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">To stage</option>
+                        {% for stage in workflow.stages %}
+                        <option value="{{ stage.id }}">{{ stage.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Add Transition</button>
+            </form>
+
+            {% if workflow.transitions is defined and workflow.transitions|length > 0 %}
+            <ul class="space-y-2">
+                {% for transition in workflow.transitions %}
+                {% set fromStage = workflow.stages|filter(s => s.id == transition.fromStageId)|first %}
+                {% set toStage = workflow.stages|filter(s => s.id == transition.toStageId)|first %}
+                <li class="flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg">
+                    <span class="text-gray-700">
+                        <span class="font-medium">{{ fromStage ? fromStage.name : transition.fromStageId }}</span>
+                        <span class="mx-2 text-gray-400">→</span>
+                        <span class="font-medium">{{ toStage ? toStage.name : transition.toStageId }}</span>
+                    </span>
+                    <form method="post" onsubmit="return confirm('Remove this transition?')">
+                        <input type="hidden" name="action" value="remove_transition">
+                        <input type="hidden" name="fromStageId" value="{{ transition.fromStageId }}">
+                        <input type="hidden" name="toStageId" value="{{ transition.toStageId }}">
+                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm">Remove</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-gray-500">No transitions defined.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if workflow %}
+    <div class="mt-6 bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">Workflow Graph</h2>
+        <div class="flex flex-wrap gap-2 items-center">
+            {% for stage in workflow.stages %}
+            <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">{{ stage.name }}</span>
+            {% if not loop.last %}
+            <span class="text-gray-400">→</span>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% if workflow.transitions|length > 0 %}
+        <div class="mt-3 text-sm text-gray-500">
+            <p>{{ workflow.transitions|length }} transition(s) configured</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

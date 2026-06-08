@@ -1,0 +1,58 @@
+<div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50"
+     x-data x-init="$el.addEventListener('click', e => { if(e.target === $el) $el.remove() })">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">Create Task</h2>
+            <button type="button" class="text-gray-400 hover:text-gray-600" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+
+        <form method="post" action="{{ path('app_task_create') }}"
+              hx-post="{{ path('app_task_create') }}"
+              hx-target="body"
+              hx-swap="innerHTML"
+              x-data
+              @submit="$el.querySelector('button[type=submit]').disabled = true">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <input type="text" name="title" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stage</label>
+                    <select name="stageId" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        {% for stage in stages %}
+                        <option value="{{ stage.id }}">{{ stage.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Client</label>
+                    <select name="clientId"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">None</option>
+                        {% for client in clients %}
+                        <option value="{{ client.id.value }}">{{ client.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="this.closest('.fixed').remove()"
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
+                    <button type="submit"
+                            class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Create Task</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

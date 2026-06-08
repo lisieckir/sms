@@ -1,0 +1,38 @@
+<div class="space-y-3 min-h-[200px]"
+     id="stage-{{ stage.id }}"
+     data-stage-id="{{ stage.id }}"
+     x-init="Sortable.create($el, {
+         group: 'kanban',
+         animation: 150,
+         ghostClass: 'opacity-50',
+         onEnd: function(evt) {
+             const taskId = evt.item.dataset.taskId;
+             const stageId = evt.to.dataset.stageId;
+             const position = evt.newIndex;
+             if (taskId && stageId) {
+                 htmx.ajax('PATCH', '/board/task/' + taskId + '/move', {
+                     values: { stageId: stageId, position: position },
+                     target: '#stage-' + stageId,
+                     swap: 'outerHTML'
+                 });
+             }
+         }
+     })">
+    {% for task in stage.tasks %}
+    <a href="{{ path('app_task_show', {id: task.id}) }}"
+       class="block bg-white rounded-lg shadow-sm p-3 cursor-pointer hover:shadow-md transition-shadow"
+       data-task-id="{{ task.id }}">
+        <h4 class="font-medium text-gray-800 text-sm">{{ task.title }}</h4>
+        <div class="flex items-center justify-between mt-2">
+            {% if task.assigneeName is defined and task.assigneeName %}
+            <span class="text-xs text-gray-500">{{ task.assigneeName }}</span>
+            {% endif %}
+            <span class="text-xs px-1.5 py-0.5 rounded {{ task.priority == 'critical' ? 'bg-red-100 text-red-700' : task.priority == 'high' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600' }}">
+                {{ task.priority }}
+            </span>
+        </div>
+    </a>
+    {% else %}
+    <p class="text-gray-400 text-sm text-center py-8">No tasks</p>
+    {% endfor %}
+</div>

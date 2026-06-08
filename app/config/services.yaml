@@ -1,0 +1,155 @@
+parameters:
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Document/'
+            - '../src/IdentityAccess/Infrastructure/Doctrine/'
+            - '../src/BoardManagement/Infrastructure/Doctrine/'
+            - '../src/TaskManagement/Infrastructure/Doctrine/'
+            - '../src/ClientManagement/Infrastructure/Doctrine/'
+
+    App\IdentityAccess\Domain\Model\UserRepositoryInterface:
+        class: App\IdentityAccess\Infrastructure\Doctrine\UserRepository
+
+    App\IdentityAccess\Domain\Service\PasswordHasherInterface:
+        class: App\IdentityAccess\Infrastructure\Security\SymfonyPasswordHasher
+
+    App\IdentityAccess\Infrastructure\Security\SymfonyPasswordHasher:
+        arguments:
+            $hasherFactory: '@Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface'
+
+    App\BoardManagement\Domain\Model\WorkflowRepositoryInterface:
+        class: App\BoardManagement\Infrastructure\Doctrine\WorkflowRepository
+
+    App\TaskManagement\Domain\Model\TaskRepositoryInterface:
+        class: App\TaskManagement\Infrastructure\Doctrine\TaskRepository
+
+    App\ClientManagement\Domain\Model\ClientRepositoryInterface:
+        class: App\ClientManagement\Infrastructure\Doctrine\ClientRepository
+
+    # IdentityAccess handlers
+    App\IdentityAccess\Application\Command\RegisterUser\RegisterUserHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\IdentityAccess\Application\Command\ChangePassword\ChangePasswordHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\IdentityAccess\Application\Command\UpdateUser\UpdateUserHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\IdentityAccess\Application\Command\ToggleUserStatus\ToggleUserStatusHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\IdentityAccess\Application\Query\ListUsersHandler:
+        tags:
+            - { name: messenger.message_handler, bus: query.bus }
+
+    # BoardManagement handlers
+    App\BoardManagement\Application\Command\CreateWorkflow\CreateWorkflowHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\BoardManagement\Application\Command\AddStage\AddStageHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\BoardManagement\Application\Command\RemoveStage\RemoveStageHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\BoardManagement\Application\Command\AddTransition\AddTransitionHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\BoardManagement\Application\Command\RemoveTransition\RemoveTransitionHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\BoardManagement\Application\Command\ReorderStage\ReorderStageHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\BoardManagement\Application\Query\GetBoardHandler:
+        tags:
+            - { name: messenger.message_handler, bus: query.bus }
+
+    App\BoardManagement\Application\Query\GetWorkflowHandler:
+        tags:
+            - { name: messenger.message_handler, bus: query.bus }
+
+    # TaskManagement handlers
+    App\TaskManagement\Application\Command\CreateTask\CreateTaskHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\TaskManagement\Application\Command\MoveTask\MoveTaskHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\TaskManagement\Application\Command\AssignTask\AssignTaskHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\TaskManagement\Application\Command\AssignClient\AssignClientHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\TaskManagement\Application\Command\AddComment\AddCommentHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\TaskManagement\Application\Command\AddWorklog\AddWorklogHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\TaskManagement\Application\Command\EditDescription\EditDescriptionHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\TaskManagement\Application\Query\GetTaskHandler:
+        tags:
+            - { name: messenger.message_handler, bus: query.bus }
+
+    App\TaskManagement\Application\Query\ListTasksByStageHandler:
+        tags:
+            - { name: messenger.message_handler, bus: query.bus }
+
+    # ClientManagement handlers
+    App\ClientManagement\Application\Command\RegisterClient\RegisterClientHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\ClientManagement\Application\Command\UpdateClient\UpdateClientHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\ClientManagement\Application\Command\BlockClient\BlockClientHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\ClientManagement\Application\Command\AddContact\AddContactHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\ClientManagement\Application\Query\ListClientsHandler:
+        tags:
+            - { name: messenger.message_handler, bus: query.bus }
+
+    App\ClientManagement\Application\Query\GetClientHandler:
+        tags:
+            - { name: messenger.message_handler, bus: query.bus }
+
+    redis_client:
+        class: Redis
+        calls:
+            - connect: ['%env(REDIS_URL)%']
