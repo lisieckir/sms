@@ -8,8 +8,7 @@ framework:
                 default_middleware: allow_no_handlers
 
         transports:
-            async: '%env(MESSENGER_TRANSPORT_DSN)%'
-            sync: 'sync://'
+            sync: 'in-memory://'
 
         routing:
             'App\IdentityAccess\Domain\Event\UserRegistered': sync

@@ -11,17 +11,15 @@ use App\IdentityAccess\Domain\Model\UserName;
 use App\IdentityAccess\Domain\Model\UserPassword;
 use App\IdentityAccess\Domain\Model\UserRepositoryInterface;
 use App\IdentityAccess\Domain\Service\PasswordHasherInterface;
-use Doctrine\Bundle\MongoDBBundle\Fixture\Fixture;
-use Doctrine\Persistence\ObjectManager;
 
-final class UserFixtures extends Fixture
+final class UserFixtures
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
     ) {}
 
-    public function load(ObjectManager $manager): void
+    public function load(): void
     {
         $users = [
             ['id' => 'admin', 'firstName' => 'Admin', 'lastName' => 'User', 'email' => 'admin@example.com', 'username' => 'admin', 'password' => 'admin123', 'method' => 'registerAdmin'],
@@ -32,6 +30,10 @@ final class UserFixtures extends Fixture
         ];
 
         foreach ($users as $data) {
+            if ($this->userRepository->findByUsername($data['username']) !== null) {
+                continue;
+            }
+
             $id = UserId::generate();
             $name = new UserName($data['firstName'], $data['lastName']);
             $email = new UserEmail($data['email']);

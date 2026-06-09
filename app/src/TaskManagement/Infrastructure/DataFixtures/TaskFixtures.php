@@ -12,10 +12,8 @@ use App\ClientManagement\Domain\Model\ClientNip;
 use App\ClientManagement\Domain\Model\ClientRepositoryInterface;
 use App\BoardManagement\Domain\Model\WorkflowRepositoryInterface;
 use App\IdentityAccess\Domain\Model\UserRepositoryInterface;
-use Doctrine\Bundle\MongoDBBundle\Fixture\Fixture;
-use Doctrine\Persistence\ObjectManager;
 
-final class TaskFixtures extends Fixture
+final class TaskFixtures
 {
     public function __construct(
         private TaskRepositoryInterface $taskRepository,
@@ -25,8 +23,12 @@ final class TaskFixtures extends Fixture
         private WorkflowRepositoryInterface $workflowRepository,
     ) {}
 
-    public function load(ObjectManager $manager): void
+    public function load(): void
     {
+        if (!empty($this->taskRepository->findAll())) {
+            return;
+        }
+
         $workflow = $this->workflowRepository->findDefault();
         if ($workflow === null) {
             throw new \RuntimeException('Default workflow not found — run WorkflowFixtures first');

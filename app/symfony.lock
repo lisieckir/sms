@@ -8,45 +8,6 @@
             "ref": "fdd756167454623e21f1d769c5b814b243782a67"
         }
     },
-    "doctrine/doctrine-bundle": {
-        "version": "2.18",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "2.13",
-            "ref": "620b57f496f2e599a6015a9fa222c2ee0a32adcb"
-        },
-        "files": [
-            "config/packages/doctrine.yaml",
-            "src/Entity/.gitignore",
-            "src/Repository/.gitignore"
-        ]
-    },
-    "doctrine/doctrine-fixtures-bundle": {
-        "version": "4.3",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "3.0",
-            "ref": "1f5514cfa15b947298df4d771e694e578d4c204d"
-        },
-        "files": [
-            "src/DataFixtures/AppFixtures.php"
-        ]
-    },
-    "doctrine/mongodb-odm-bundle": {
-        "version": "5.6",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "5.0",
-            "ref": "2bbccc6ecb92903494e4c6291255014a32c59fad"
-        },
-        "files": [
-            "config/packages/doctrine_mongodb.yaml",
-            "src/Document/.gitignore"
-        ]
-    },
     "phpunit/phpunit": {
         "version": "12.5",
         "recipe": {

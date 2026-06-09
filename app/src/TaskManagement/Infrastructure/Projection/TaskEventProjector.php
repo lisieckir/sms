@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\TaskManagement\Infrastructure\Projection;
 
+use App\TaskManagement\Infrastructure\PocketBase\TaskEventStore;
 use App\TaskManagement\Domain\Event\CommentAdded;
 use App\TaskManagement\Domain\Event\TaskAssigned;
 use App\TaskManagement\Domain\Event\TaskClientChanged;

@@ -48,6 +48,16 @@ class InMemoryTaskRepository implements TaskRepositoryInterface
         return array_values($this->tasks);
     }
 
+    public function reindexStage(string $stageId): void
+    {
+        $tasks = $this->findByStage($stageId);
+        usort($tasks, fn(Task $a, Task $b) => $a->position() <=> $b->position());
+        foreach ($tasks as $i => $task) {
+            $task->changePosition($i);
+            $this->save($task);
+        }
+    }
+
     public function nextIdentity(): TaskId
     {
         return TaskId::generate();

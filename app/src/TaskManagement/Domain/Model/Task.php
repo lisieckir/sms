@@ -75,6 +75,12 @@ class Task
         $this->recordEvent(new TaskMoved($this->id, $oldStage, $stageId, new \DateTimeImmutable()));
     }
 
+    public function changePosition(int $position): void
+    {
+        $this->position = $position;
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
     public function assignTo(?string $assigneeId): void
     {
         $oldAssignee = $this->assigneeId;

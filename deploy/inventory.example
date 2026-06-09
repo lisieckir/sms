@@ -1,0 +1,7 @@
+REMOTE_HOST=sms.mikr.us
+REMOTE_USER=root
+REMOTE_PATH=/var/www/sms
+SSH_KEY=~/.ssh/id_ed25519
+APP_SECRET=change_this_to_random_string
+MAILER_DSN=smtp://user:pass@smtp.example.com:587
+DEFAULT_URI=https://sms.mikr.us

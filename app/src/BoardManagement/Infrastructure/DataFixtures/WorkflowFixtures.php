@@ -6,17 +6,19 @@ namespace App\BoardManagement\Infrastructure\DataFixtures;
 
 use App\BoardManagement\Domain\Model\Workflow;
 use App\BoardManagement\Domain\Model\WorkflowRepositoryInterface;
-use Doctrine\Bundle\MongoDBBundle\Fixture\Fixture;
-use Doctrine\Persistence\ObjectManager;
 
-final class WorkflowFixtures extends Fixture
+final class WorkflowFixtures
 {
     public function __construct(
         private WorkflowRepositoryInterface $workflowRepository,
     ) {}
 
-    public function load(ObjectManager $manager): void
+    public function load(): void
     {
+        if ($this->workflowRepository->findDefault() !== null) {
+            return;
+        }
+
         $id = $this->workflowRepository->nextIdentity();
         $workflow = Workflow::create($id, 'Default Workflow', isDefault: true);
 

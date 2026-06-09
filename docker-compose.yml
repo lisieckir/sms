@@ -8,13 +8,11 @@ services:
       - ./app:/app
     environment:
       APP_ENV: dev
-      MONGO_URL: mongodb://mongodb:27017/sidegigs
-      REDIS_URL: redis://redis:6379
+      POCKETBASE_URL: http://pocketbase:8090
       MAILER_DSN: smtp://mailpit:1025
       APP_SECRET: change_this_in_production
     depends_on:
-      - mongodb
-      - redis
+      - pocketbase
 
   nginx:
     image: nginx:alpine
@@ -26,21 +24,13 @@ services:
     depends_on:
       - php
 
-  mongodb:
-    image: mongo:7
+  pocketbase:
+    build:
+      context: docker/pocketbase
     ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_DATABASE: sidegigs
+      - "8090:8090"
     volumes:
-      - mongodb_data:/data/db
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
+      - pb_data:/pb_data
 
   mailpit:
     image: axllent/mailpit
@@ -49,5 +39,4 @@ services:
       - "8025:8025"
 
 volumes:
-  mongodb_data:
-  redis_data:
+  pb_data:

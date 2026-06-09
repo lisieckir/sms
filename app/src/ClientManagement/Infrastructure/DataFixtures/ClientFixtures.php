@@ -8,16 +8,14 @@ use App\ClientManagement\Domain\Model\Client;
 use App\ClientManagement\Domain\Model\ClientId;
 use App\ClientManagement\Domain\Model\ClientNip;
 use App\ClientManagement\Domain\Model\ClientRepositoryInterface;
-use Doctrine\Bundle\MongoDBBundle\Fixture\Fixture;
-use Doctrine\Persistence\ObjectManager;
 
-final class ClientFixtures extends Fixture
+final class ClientFixtures
 {
     public function __construct(
         private ClientRepositoryInterface $clientRepository,
     ) {}
 
-    public function load(ObjectManager $manager): void
+    public function load(): void
     {
         $clients = [
             ['id' => 'acme', 'nip' => '1234567890', 'name' => 'Acme Corp', 'address' => 'ul. Marszałkowska 100, 00-001 Warszawa', 'country' => 'Poland', 'email' => 'kontakt@acme.pl', 'description' => 'Leading software development company', 'contacts' => [
@@ -37,6 +35,10 @@ final class ClientFixtures extends Fixture
         ];
 
         foreach ($clients as $data) {
+            if ($this->clientRepository->findByNip(new ClientNip($data['nip'])) !== null) {
+                continue;
+            }
+
             $id = ClientId::generate();
             $nip = new ClientNip($data['nip']);
 

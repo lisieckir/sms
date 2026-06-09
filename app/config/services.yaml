@@ -4,18 +4,19 @@ services:
     _defaults:
         autowire: true
         autoconfigure: true
+        bind:
+            string $pocketbaseUrl: '%env(POCKETBASE_URL)%'
 
     App\:
         resource: '../src/'
         exclude:
-            - '../src/Document/'
-            - '../src/IdentityAccess/Infrastructure/Doctrine/'
-            - '../src/BoardManagement/Infrastructure/Doctrine/'
-            - '../src/TaskManagement/Infrastructure/Doctrine/'
-            - '../src/ClientManagement/Infrastructure/Doctrine/'
+            - '../src/IdentityAccess/Domain/'
+            - '../src/BoardManagement/Domain/'
+            - '../src/ClientManagement/Domain/'
+            - '../src/TaskManagement/Domain/'
 
     App\IdentityAccess\Domain\Model\UserRepositoryInterface:
-        class: App\IdentityAccess\Infrastructure\Doctrine\UserRepository
+        class: App\IdentityAccess\Infrastructure\PocketBase\UserRepository
 
     App\IdentityAccess\Domain\Service\PasswordHasherInterface:
         class: App\IdentityAccess\Infrastructure\Security\SymfonyPasswordHasher
@@ -25,13 +26,13 @@ services:
             $hasherFactory: '@Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface'
 
     App\BoardManagement\Domain\Model\WorkflowRepositoryInterface:
-        class: App\BoardManagement\Infrastructure\Doctrine\WorkflowRepository
+        class: App\BoardManagement\Infrastructure\PocketBase\WorkflowRepository
 
     App\TaskManagement\Domain\Model\TaskRepositoryInterface:
-        class: App\TaskManagement\Infrastructure\Doctrine\TaskRepository
+        class: App\TaskManagement\Infrastructure\PocketBase\TaskRepository
 
     App\ClientManagement\Domain\Model\ClientRepositoryInterface:
-        class: App\ClientManagement\Infrastructure\Doctrine\ClientRepository
+        class: App\ClientManagement\Infrastructure\PocketBase\ClientRepository
 
     # IdentityAccess handlers
     App\IdentityAccess\Application\Command\RegisterUser\RegisterUserHandler:
@@ -148,8 +149,3 @@ services:
     App\ClientManagement\Application\Query\GetClientHandler:
         tags:
             - { name: messenger.message_handler, bus: query.bus }
-
-    redis_client:
-        class: Redis
-        calls:
-            - connect: ['%env(REDIS_URL)%']

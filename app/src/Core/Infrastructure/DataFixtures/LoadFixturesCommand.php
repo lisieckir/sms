@@ -14,7 +14,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'app:fixtures:load', description: 'Load development fixtures into MongoDB')]
+#[AsCommand(name: 'app:fixtures:load', description: 'Load development fixtures into PocketBase')]
 final class LoadFixturesCommand extends Command
 {
     public function __construct(
@@ -30,28 +30,17 @@ final class LoadFixturesCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $container = $this->getApplication()->getKernel()->getContainer();
-        $dm = $container->get('doctrine_mongodb')->getManager();
-
-        $io->section('Purging database');
-        foreach ($dm->getDocumentDatabases() as $db) {
-            foreach ($db->listCollectionNames() as $name) {
-                $db->dropCollection($name);
-            }
-        }
-        $io->info('All collections dropped');
-
         $io->section('Loading UserFixtures');
-        $this->userFixtures->load($dm);
+        $this->userFixtures->load();
 
         $io->section('Loading WorkflowFixtures');
-        $this->workflowFixtures->load($dm);
+        $this->workflowFixtures->load();
 
         $io->section('Loading ClientFixtures');
-        $this->clientFixtures->load($dm);
+        $this->clientFixtures->load();
 
         $io->section('Loading TaskFixtures');
-        $this->taskFixtures->load($dm);
+        $this->taskFixtures->load();
 
         $io->success('Fixtures loaded successfully');
 

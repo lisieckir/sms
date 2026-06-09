@@ -13,11 +13,8 @@ console:
 test:
 	docker compose exec php php bin/phpunit
 
-migrate:
-	docker compose exec php php bin/console doctrine:mongodb:schema:update
-
 fixtures:
-	docker compose exec php php bin/console doctrine:fixtures:load
+	docker compose exec php php bin/console app:fixtures:load
 
 logs:
 	docker compose logs -f
@@ -31,4 +28,4 @@ rebuild:
 npm:
 	docker compose run --rm php npm $(filter-out $@,$(MAKECMDGOALS))
 
-.PHONY: up down bash console test migrate fixtures logs build rebuild
+.PHONY: up down bash console test fixtures logs build rebuild

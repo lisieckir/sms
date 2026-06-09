@@ -38,8 +38,13 @@ final class MoveTaskHandler
             );
         }
 
-        $task->moveToStage($command->stageId(), $command->position());
+        $task->moveToStage($toStageId, $command->position());
         $this->taskRepository->save($task);
+        $this->taskRepository->reindexStage($toStageId);
+
+        if ($fromStageId !== $toStageId) {
+            $this->taskRepository->reindexStage($fromStageId);
+        }
 
         foreach ($task->releaseEvents() as $event) {
             $this->eventProjector->project($event);
