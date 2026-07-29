@@ -34,6 +34,12 @@ info()  { printf "\033[1;34m==>\033[0m %s\n" "$*"; }
 ok()    { printf "\033[1;32m OK\033[0m  %s\n" "$*"; }
 die()   { printf "\033[1;31mERR\033[0m  %s\n" "$*"; exit 1; }
 remote() { ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" "$@"; }
+step()  {
+    prefix="$1"; shift
+    out=$(remote "$@" 2>&1) && rc=0 || rc=$?
+    echo "$out" | sed "s/^/  $prefix: /"
+    return "$rc"
+}
 
 if [ "$APP_SECRET" = "change_this_to_random_string" ]; then
     die "Edit APP_SECRET in your inventory file - do not use the example value."
@@ -62,10 +68,10 @@ rsync -az --delete \
 ok "Files synced"
 
 info "Ensuring Composer is available"
-remote "command -v composer >/dev/null 2>&1 || (wget -q https://getcomposer.org/installer -O /tmp/composer-setup.php && $PHP_BINARY /tmp/composer-setup.php --install-dir=/usr/bin --filename=composer --quiet && rm /tmp/composer-setup.php)" 2>&1 | sed 's/^/  composer: /'
+step "composer" "command -v composer >/dev/null 2>&1 || (wget -q https://getcomposer.org/installer -O /tmp/composer-setup.php && $PHP_BINARY /tmp/composer-setup.php --install-dir=/usr/bin --filename=composer --quiet && rm /tmp/composer-setup.php)"
 
 info "Installing PHP dependencies"
-remote "cd $REMOTE_PATH/app && composer install --no-dev --optimize-autoloader --no-interaction 2>&1 | sed 's/^/  composer: /'"
+step "composer" "cd $REMOTE_PATH/app && composer install --no-dev --optimize-autoloader --no-interaction 2>&1" || die "Composer install failed"
 ok "Dependencies installed"
 
 info "Configuring production environment"
@@ -73,10 +79,10 @@ remote "cd $REMOTE_PATH/app && if [ ! -f .env ]; then export APP_SECRET='$APP_SE
 ok "Environment configured"
 
 info "Ensuring PocketBase is running"
-remote "rc-service pocketbase status >/dev/null 2>&1 || rc-service pocketbase start" 2>&1 | sed 's/^/  pocketbase: /'
+step "pocketbase" "rc-service pocketbase status >/dev/null 2>&1 || rc-service pocketbase start"
 
 info "Configuring nginx"
-remote "cp $REMOTE_PATH/deploy/templates/nginx.sms.conf /etc/nginx/http.d/sms.conf && ( rc-service nginx reload 2>&1 || rc-service nginx start 2>&1 )" | sed 's/^/  nginx: /'
+step "nginx" "cp $REMOTE_PATH/deploy/templates/nginx.sms.conf /etc/nginx/http.d/sms.conf && ( rc-service nginx reload 2>&1 || rc-service nginx start 2>&1 )" || die "nginx configuration failed"
 ok "nginx configured"
 
 info "Setting permissions"
@@ -88,19 +94,21 @@ remote "cp $REMOTE_PATH/deploy/templates/logrotate.sms /etc/logrotate.d/sms"
 ok "Logrotate configured"
 
 info "Clearing and warming cache"
-remote "cd $REMOTE_PATH/app && APP_ENV=prod APP_DEBUG=0 $PHP_BINARY bin/console cache:clear --no-warmup 2>&1 | sed 's/^/  console: /' && APP_ENV=prod APP_DEBUG=0 $PHP_BINARY bin/console cache:warmup 2>&1 | sed 's/^/  console: /'"
+step "console" "cd $REMOTE_PATH/app && APP_ENV=prod APP_DEBUG=0 $PHP_BINARY bin/console cache:clear --no-warmup" || die "Cache clear failed"
+step "console" "cd $REMOTE_PATH/app && APP_ENV=prod APP_DEBUG=0 $PHP_BINARY bin/console cache:warmup" || die "Cache warmup failed"
 ok "Cache warmed"
 
 info "Running PocketBase schema migrations"
-remote "cd $REMOTE_PATH/app && POCKETBASE_ADMIN_EMAIL='${POCKETBASE_ADMIN_EMAIL}' POCKETBASE_ADMIN_PASSWORD='${POCKETBASE_ADMIN_PASSWORD}' $PHP_BINARY bin/console app:pocketbase:migrate --no-interaction 2>&1 | sed 's/^/  migrate: /'"
+step "migrate" "cd $REMOTE_PATH/app && POCKETBASE_ADMIN_EMAIL='${POCKETBASE_ADMIN_EMAIL}' POCKETBASE_ADMIN_PASSWORD='${POCKETBASE_ADMIN_PASSWORD}' $PHP_BINARY bin/console app:pocketbase:migrate --no-interaction" || die "PocketBase migration failed"
 ok "Migrations complete"
 
 info "Restarting PHP-FPM"
-remote "rc-service $PHP_FPM_SERVICE restart 2>&1 || rc-service php-fpm restart 2>&1 || echo '  WARNING: could not restart PHP-FPM (tried: $PHP_FPM_SERVICE, php-fpm)'" | sed 's/^/  php-fpm: /'
+step "php-fpm" "rc-service $PHP_FPM_SERVICE restart 2>&1 || rc-service php-fpm restart 2>&1 || echo '  WARNING: could not restart PHP-FPM (tried: $PHP_FPM_SERVICE, php-fpm)'"
 
 if [ "$SEED" = true ]; then
     info "Seeding initial data"
-    remote "cd $REMOTE_PATH/app && $PHP_BINARY bin/console app:seed-default-workflow 2>&1 | sed 's/^/  seed: /' && $PHP_BINARY bin/console app:fixtures:load 2>&1 | sed 's/^/  fixtures: /'"
+    step "seed" "cd $REMOTE_PATH/app && $PHP_BINARY bin/console app:seed-default-workflow" || die "Seed failed"
+    step "fixtures" "cd $REMOTE_PATH/app && $PHP_BINARY bin/console app:fixtures:load" || die "Fixtures failed"
     ok "Seed data loaded"
 fi
 

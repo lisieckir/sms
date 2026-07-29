@@ -39,35 +39,32 @@ final class PocketBaseMigrateCommand extends Command
         $adminEmail = $input->getOption('email')
             ?? $_SERVER['POCKETBASE_ADMIN_EMAIL']
             ?? $_ENV['POCKETBASE_ADMIN_EMAIL']
-            ?? $io->ask('PocketBase admin email', 'admin@sidegigs.local');
+            ?? ($input->isInteractive() ? $io->ask('PocketBase admin email', 'admin@sidegigs.local') : null);
 
         $adminPassword = $input->getOption('password')
             ?? $_SERVER['POCKETBASE_ADMIN_PASSWORD']
             ?? $_ENV['POCKETBASE_ADMIN_PASSWORD']
-            ?? $io->askHidden('PocketBase admin password');
+            ?? ($input->isInteractive() ? $io->askHidden('PocketBase admin password') : null);
+
+        if (!$adminEmail || !$adminPassword) {
+            $io->error('POCKETBASE_ADMIN_EMAIL and POCKETBASE_ADMIN_PASSWORD must be set (env, options, or interactive)');
+            return Command::FAILURE;
+        }
 
         $io->section('Authenticating to PocketBase');
 
-        try {
-            $response = $this->httpClient->request('POST', $this->baseUrl . '/collections/_superusers/auth-with-password', [
-                'json' => [
-                    'identity' => $adminEmail,
-                    'password' => $adminPassword,
-                ],
-            ]);
-            $data = $response->toArray();
-            $token = $data['token'] ?? null;
-        } catch (\Throwable $e) {
-            $io->error('Authentication failed: ' . $e->getMessage());
+        $token = $this->authenticate($adminEmail, $adminPassword);
+
+        if ($token === null) {
+            $io->error(sprintf(
+                'Authentication failed at %s. Check POCKETBASE_URL and admin credentials.',
+                $this->baseUrl
+            ));
+            $io->note('Try: POCKETBASE_ADMIN_EMAIL=... POCKETBASE_ADMIN_PASSWORD=... php bin/console app:pocketbase:migrate');
             return Command::FAILURE;
         }
 
-        if (!$token) {
-            $io->error('Failed to obtain auth token');
-            return Command::FAILURE;
-        }
-
-        $io->success('Authenticated successfully');
+        $io->success('Authenticated as ' . $adminEmail);
 
         $manager = new MigrationManager(
             $this->httpClient,
@@ -92,5 +89,30 @@ final class PocketBaseMigrateCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    private function authenticate(string $email, string $password): ?string
+    {
+        $endpoints = [
+            '/collections/_superusers/auth-with-password',
+            '/admins/auth-with-password',
+        ];
+
+        foreach ($endpoints as $endpoint) {
+            try {
+                $response = $this->httpClient->request('POST', $this->baseUrl . $endpoint, [
+                    'json' => ['identity' => $email, 'password' => $password],
+                    'headers' => ['Content-Type' => 'application/json'],
+                ]);
+                $data = $response->toArray();
+                if (isset($data['token'])) {
+                    return $data['token'];
+                }
+            } catch (\Throwable $e) {
+                continue;
+            }
+        }
+
+        return null;
     }
 }
