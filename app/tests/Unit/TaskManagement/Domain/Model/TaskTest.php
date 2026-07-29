@@ -12,6 +12,8 @@ use App\TaskManagement\Domain\Event\TaskMoved;
 use App\TaskManagement\Domain\Event\TaskAssigned;
 use App\TaskManagement\Domain\Event\TaskDescriptionChanged;
 use App\TaskManagement\Domain\Event\CommentAdded;
+use App\TaskManagement\Domain\Event\CommentEdited;
+use App\TaskManagement\Domain\Event\CommentRemoved;
 use App\TaskManagement\Domain\Event\WorklogAdded;
 use PHPUnit\Framework\TestCase;
 
@@ -123,6 +125,60 @@ class TaskTest extends TestCase
         $events = $task->releaseEvents();
         $this->assertCount(1, $events);
         $this->assertInstanceOf(CommentAdded::class, $events[0]);
+    }
+
+    public function testEditComment(): void
+    {
+        $task = $this->createTaskAndClearEvents();
+        $task->addComment('user-1', 'Original');
+        $task->releaseEvents();
+        $commentId = $task->comments()[0]->id();
+
+        $task->editComment($commentId, 'Edited content');
+
+        $this->assertCount(1, $task->comments());
+        $this->assertSame('Edited content', $task->comments()[0]->content());
+        $this->assertNotNull($task->comments()[0]->editedAt());
+
+        $events = $task->releaseEvents();
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf(CommentEdited::class, $events[0]);
+    }
+
+    public function testEditCommentNotFoundThrowsException(): void
+    {
+        $task = $this->createTaskAndClearEvents();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Comment not found');
+        $task->editComment('nonexistent-id', 'new content');
+    }
+
+    public function testRemoveComment(): void
+    {
+        $task = $this->createTaskAndClearEvents();
+        $task->addComment('user-1', 'First');
+        $task->addComment('user-1', 'Second');
+        $task->releaseEvents();
+        $commentId = $task->comments()[0]->id();
+
+        $task->removeComment($commentId);
+
+        $this->assertCount(1, $task->comments());
+        $this->assertSame('Second', $task->comments()[0]->content());
+
+        $events = $task->releaseEvents();
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf(CommentRemoved::class, $events[0]);
+    }
+
+    public function testRemoveCommentNotFoundThrowsException(): void
+    {
+        $task = $this->createTaskAndClearEvents();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Comment not found');
+        $task->removeComment('nonexistent-id');
     }
 
     public function testAddCommentEnforcesMax50Limit(): void

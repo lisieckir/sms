@@ -18,6 +18,8 @@
                 {% elseif event.type == 'TaskAssigned' %}border-purple-500
                 {% elseif event.type == 'TaskDescriptionChanged' %}border-yellow-500
                 {% elseif event.type == 'CommentAdded' %}border-yellow-500
+                {% elseif event.type == 'CommentEdited' %}border-purple-500
+                {% elseif event.type == 'CommentRemoved' %}border-red-500
                 {% elseif event.type == 'WorklogAdded' %}border-orange-500
                 {% else %}border-gray-300{% endif %}">
                 <div class="flex items-center justify-between">
@@ -35,6 +37,10 @@
                         Assigned to <strong>{{ event.data.newAssigneeName|default(event.data.newAssigneeId|default('?')) }}</strong>
                     {% elseif event.type == 'CommentAdded' %}
                         Comment added
+                    {% elseif event.type == 'CommentEdited' %}
+                        Comment edited
+                    {% elseif event.type == 'CommentRemoved' %}
+                        Comment removed
                     {% elseif event.type == 'WorklogAdded' %}
                         Logged {{ event.data.minutes|default(0) }} minutes
                     {% else %}

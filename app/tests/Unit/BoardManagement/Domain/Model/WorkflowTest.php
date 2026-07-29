@@ -67,7 +67,11 @@ class WorkflowTest extends TestCase
 
         $workflow->reorderStage($stageA->id(), 5);
 
-        $this->assertSame(5, $workflow->stages()[0]->position());
+        $sorted = $workflow->sortedStages();
+        $this->assertSame('B', $sorted[0]->name());
+        $this->assertSame(0, $sorted[0]->position());
+        $this->assertSame('A', $sorted[1]->name());
+        $this->assertSame(5, $sorted[1]->position());
     }
 
     public function testReorderStageNotFoundThrowsException(): void

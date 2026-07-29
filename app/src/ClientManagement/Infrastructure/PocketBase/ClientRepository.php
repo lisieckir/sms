@@ -8,6 +8,7 @@ use App\ClientManagement\Domain\Model\Client;
 use App\ClientManagement\Domain\Model\ClientId;
 use App\ClientManagement\Domain\Model\ClientNip;
 use App\ClientManagement\Domain\Model\ClientRepositoryInterface;
+use App\ClientManagement\Domain\Model\ClientSettlementType;
 use App\ClientManagement\Domain\Model\Contact;
 use App\Core\Infrastructure\PocketBase\PocketBaseClient;
 
@@ -29,6 +30,7 @@ final readonly class ClientRepository implements ClientRepositoryInterface
             'country' => $client->country(),
             'email' => $client->email(),
             'description' => $client->description(),
+            'settlementType' => $client->settlementType()->value(),
             'status' => $client->status(),
             'contacts' => array_map(fn(Contact $c) => [
                 'id' => $c->id(),
@@ -58,14 +60,14 @@ final readonly class ClientRepository implements ClientRepositoryInterface
 
     public function findAll(): array
     {
-        $result = $this->pb->list(self::COLLECTION);
+        $result = $this->pb->list(self::COLLECTION, ['filter' => 'status!="deleted"']);
         return array_map(fn(array $r) => $this->toDomain($r), $result['items']);
     }
 
     public function searchByTerm(string $term): array
     {
         $escaped = addslashes($term);
-        $filter = sprintf('name~"%s" || email~"%s" || nip~"%s"', $escaped, $escaped, $escaped);
+        $filter = sprintf('(name~"%s" || email~"%s" || nip~"%s") && status!="deleted"', $escaped, $escaped, $escaped);
         $result = $this->pb->list(self::COLLECTION, ['filter' => $filter]);
         return array_map(fn(array $r) => $this->toDomain($r), $result['items']);
     }
@@ -109,6 +111,10 @@ final readonly class ClientRepository implements ClientRepositoryInterface
         $descProp = $client->getProperty('description');
         $descProp->setAccessible(true);
         $descProp->setValue($instance, $fields['description']);
+
+        $settlementProp = $client->getProperty('settlementType');
+        $settlementProp->setAccessible(true);
+        $settlementProp->setValue($instance, new ClientSettlementType($fields['settlementType'] ?? ClientSettlementType::B2B));
 
         $statusProp = $client->getProperty('status');
         $statusProp->setAccessible(true);

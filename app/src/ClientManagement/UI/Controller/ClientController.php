@@ -6,7 +6,9 @@ namespace App\ClientManagement\UI\Controller;
 
 use App\ClientManagement\Application\Command\AddContact\AddContactCommand;
 use App\ClientManagement\Application\Command\BlockClient\BlockClientCommand;
+use App\ClientManagement\Application\Command\DeleteClient\DeleteClientCommand;
 use App\ClientManagement\Application\Command\RegisterClient\RegisterClientCommand;
+use App\ClientManagement\Application\Command\RestoreClient\RestoreClientCommand;
 use App\ClientManagement\Application\Command\UpdateClient\UpdateClientCommand;
 use App\ClientManagement\Application\Query\GetClientHandler;
 use App\ClientManagement\Application\Query\GetClientQuery;
@@ -34,13 +36,15 @@ class ClientController extends AbstractController
     public function create(Request $request, MessageBusInterface $commandBus): Response
     {
         if ($request->isMethod('POST')) {
+            $email = $request->request->get('email');
             $commandBus->dispatch(new RegisterClientCommand(
                 nip: $request->request->get('nip'),
                 name: $request->request->get('name'),
                 address: $request->request->get('address'),
                 country: $request->request->get('country'),
-                email: $request->request->get('email'),
+                email: $email !== '' ? $email : null,
                 description: $request->request->get('description', ''),
+                settlementType: $request->request->get('settlementType') ?: null,
             ));
 
             $this->addFlash('success', 'Client created');
@@ -74,13 +78,15 @@ class ClientController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
+            $email = $request->request->get('email');
             $commandBus->dispatch(new UpdateClientCommand(
                 clientId: $id,
                 name: $request->request->get('name'),
                 address: $request->request->get('address'),
                 country: $request->request->get('country'),
-                email: $request->request->get('email'),
+                email: $email !== '' ? $email : null,
                 description: $request->request->get('description', ''),
+                settlementType: $request->request->get('settlementType') ?: null,
             ));
 
             $this->addFlash('success', 'Client updated');
@@ -107,6 +113,22 @@ class ClientController extends AbstractController
 
         $this->addFlash('success', 'Client status updated');
         return $this->redirectToRoute('app_client_list');
+    }
+
+    #[Route('/{id}/delete', name: 'app_client_delete', methods: ['POST'])]
+    public function delete(string $id, MessageBusInterface $commandBus): Response
+    {
+        $commandBus->dispatch(new DeleteClientCommand($id));
+        $this->addFlash('success', 'Client deleted');
+        return $this->redirectToRoute('app_client_list');
+    }
+
+    #[Route('/{id}/restore', name: 'app_client_restore', methods: ['POST'])]
+    public function restore(string $id, MessageBusInterface $commandBus): Response
+    {
+        $commandBus->dispatch(new RestoreClientCommand($id));
+        $this->addFlash('success', 'Client restored');
+        return $this->redirectToRoute('app_client_show', ['id' => $id]);
     }
 
     #[Route('/{id}/contact', name: 'app_client_add_contact', methods: ['POST'])]

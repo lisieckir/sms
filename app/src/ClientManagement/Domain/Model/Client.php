@@ -13,6 +13,7 @@ class Client
 
     private \DateTimeImmutable $updatedAt;
     private array $contacts = [];
+    private ?\DateTimeImmutable $deletedAt = null;
 
     private function __construct(
         private ClientId $id,
@@ -20,8 +21,9 @@ class Client
         private string $name,
         private string $address,
         private string $country,
-        private string $email,
+        private ?string $email,
         private string $description,
+        private ClientSettlementType $settlementType,
         private string $status,
         private \DateTimeImmutable $createdAt,
     ) {
@@ -34,9 +36,11 @@ class Client
         string $name,
         string $address,
         string $country,
-        string $email,
+        ?string $email = null,
         string $description = '',
+        ?ClientSettlementType $settlementType = null,
     ): self {
+        $settlementType = $settlementType ?? new ClientSettlementType(ClientSettlementType::B2B);
         $client = new self(
             $id,
             $nip,
@@ -45,6 +49,7 @@ class Client
             $country,
             $email,
             $description,
+            $settlementType,
             'active',
             new \DateTimeImmutable(),
         );
@@ -56,14 +61,18 @@ class Client
         string $name,
         string $address,
         string $country,
-        string $email,
-        string $description,
+        ?string $email = null,
+        string $description = '',
+        ?ClientSettlementType $settlementType = null,
     ): void {
         $this->name = $name;
         $this->address = $address;
         $this->country = $country;
         $this->email = $email;
         $this->description = $description;
+        if ($settlementType !== null) {
+            $this->settlementType = $settlementType;
+        }
         $this->updatedAt = new \DateTimeImmutable();
     }
 
@@ -79,6 +88,20 @@ class Client
         $this->updatedAt = new \DateTimeImmutable();
     }
 
+    public function delete(): void
+    {
+        $this->status = 'deleted';
+        $this->deletedAt = new \DateTimeImmutable();
+        $this->updatedAt = $this->deletedAt;
+    }
+
+    public function restore(): void
+    {
+        $this->status = 'active';
+        $this->deletedAt = null;
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
     public function addContact(string $firstName, string $lastName, string $email, ?string $phone = null): void
     {
         $this->contacts[] = Contact::create($firstName, $lastName, $email, $phone);
@@ -90,12 +113,15 @@ class Client
     public function name(): string { return $this->name; }
     public function address(): string { return $this->address; }
     public function country(): string { return $this->country; }
-    public function email(): string { return $this->email; }
+    public function email(): ?string { return $this->email; }
     public function description(): string { return $this->description; }
+    public function settlementType(): ClientSettlementType { return $this->settlementType; }
     public function contacts(): array { return $this->contacts; }
     public function status(): string { return $this->status; }
     public function createdAt(): \DateTimeImmutable { return $this->createdAt; }
     public function updatedAt(): \DateTimeImmutable { return $this->updatedAt; }
+    public function deletedAt(): ?\DateTimeImmutable { return $this->deletedAt; }
     public function isActive(): bool { return $this->status === 'active'; }
     public function isBlocked(): bool { return $this->status === 'blocked'; }
+    public function isDeleted(): bool { return $this->status === 'deleted'; }
 }

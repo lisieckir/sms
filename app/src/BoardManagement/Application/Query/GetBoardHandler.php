@@ -41,7 +41,7 @@ final class GetBoardHandler
                     'assigneeName' => null,
                     'clientId' => $task->clientId(),
                     'position' => $task->position(),
-                    'priority' => 'medium',
+                    'priority' => $task->priority()->value(),
                 ];
             }
 

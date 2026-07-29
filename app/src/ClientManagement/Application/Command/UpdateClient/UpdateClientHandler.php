@@ -6,6 +6,7 @@ namespace App\ClientManagement\Application\Command\UpdateClient;
 
 use App\ClientManagement\Domain\Model\ClientId;
 use App\ClientManagement\Domain\Model\ClientRepositoryInterface;
+use App\ClientManagement\Domain\Model\ClientSettlementType;
 
 final class UpdateClientHandler
 {
@@ -26,6 +27,7 @@ final class UpdateClientHandler
             country: $command->country(),
             email: $command->email(),
             description: $command->description(),
+            settlementType: $command->settlementType() !== null ? new ClientSettlementType($command->settlementType()) : null,
         );
         $this->clientRepository->save($client);
     }

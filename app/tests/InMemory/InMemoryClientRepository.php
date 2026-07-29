@@ -36,14 +36,15 @@ class InMemoryClientRepository implements ClientRepositoryInterface
 
     public function findAll(): array
     {
-        return array_values($this->clients);
+        return array_values(array_filter($this->clients, fn(Client $c) => !$c->isDeleted()));
     }
 
     public function searchByTerm(string $term): array
     {
         return array_values(array_filter($this->clients, fn(Client $c) =>
-            stripos($c->name(), $term) !== false
-            || stripos($c->email(), $term) !== false
+            !$c->isDeleted()
+            && (stripos($c->name(), $term) !== false
+                || ($c->email() !== null && stripos($c->email(), $term) !== false))
         ));
     }
 

@@ -8,8 +8,8 @@ final readonly class ClientNip
 {
     public function __construct(private string $value)
     {
-        if (!preg_match('/^\d{10}$/', $value)) {
-            throw new \InvalidArgumentException('NIP must be exactly 10 digits');
+        if (!preg_match('/^[A-Za-z0-9\-]{4,20}$/', $value)) {
+            throw new \InvalidArgumentException('NIP must be 4-20 alphanumeric characters');
         }
     }
 

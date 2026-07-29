@@ -1,7 +1,17 @@
 REMOTE_HOST=sms.mikr.us
 REMOTE_USER=root
 REMOTE_PATH=/var/www/sms
+SSH_PORT=22
 SSH_KEY=~/.ssh/id_ed25519
+
+# PHP (Alpine: php83, zwykły Linux: php)
+PHP_BINARY=php83
+PHP_FPM_SERVICE=php83-fpm
+
 APP_SECRET=change_this_to_random_string
 MAILER_DSN=smtp://user:pass@smtp.example.com:587
 DEFAULT_URI=https://sms.mikr.us
+
+# PocketBase admin credentials (for schema migrations via app:pocketbase:migrate)
+POCKETBASE_ADMIN_EMAIL=admin@sidegigs.local
+POCKETBASE_ADMIN_PASSWORD=admin123

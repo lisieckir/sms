@@ -1,0 +1,10 @@
+/var/www/sms/app/var/log/*.log {
+    weekly
+    rotate 12
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    sharedscripts
+}

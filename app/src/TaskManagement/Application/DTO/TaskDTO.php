@@ -10,6 +10,7 @@ final class TaskDTO
         private string $id,
         private string $title,
         private string $description,
+        private string $descriptionHtml,
         private string $creatorId,
         private ?string $assigneeId,
         private ?string $assigneeName,
@@ -18,6 +19,7 @@ final class TaskDTO
         private string $stageId,
         private string $stageName,
         private int $position,
+        private string $priority,
         private ?string $parentTaskId,
         private ?string $parentTaskName,
         private int $totalTimeSpent,
@@ -35,6 +37,7 @@ final class TaskDTO
             $data['id'],
             $data['title'],
             $data['description'],
+            $data['descriptionHtml'] ?? '',
             $data['creatorId'],
             $data['assigneeId'] ?? null,
             $data['assigneeName'] ?? null,
@@ -43,6 +46,7 @@ final class TaskDTO
             $data['stageId'],
             $data['stageName'] ?? $data['stageId'],
             $data['position'],
+            $data['priority'] ?? 'medium',
             $data['parentTaskId'] ?? null,
             $data['parentTaskName'] ?? null,
             $data['totalTimeSpent'] ?? 0,
@@ -61,6 +65,7 @@ final class TaskDTO
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
+            'descriptionHtml' => $this->descriptionHtml,
             'creatorId' => $this->creatorId,
             'assigneeId' => $this->assigneeId,
             'assigneeName' => $this->assigneeName,
@@ -69,6 +74,7 @@ final class TaskDTO
             'stageId' => $this->stageId,
             'stageName' => $this->stageName,
             'position' => $this->position,
+            'priority' => $this->priority,
             'parentTaskId' => $this->parentTaskId,
             'parentTaskName' => $this->parentTaskName,
             'totalTimeSpent' => $this->totalTimeSpent,
@@ -84,6 +90,7 @@ final class TaskDTO
     public function id(): string { return $this->id; }
     public function title(): string { return $this->title; }
     public function description(): string { return $this->description; }
+    public function descriptionHtml(): string { return $this->descriptionHtml; }
     public function creatorId(): string { return $this->creatorId; }
     public function assigneeId(): ?string { return $this->assigneeId; }
     public function assigneeName(): ?string { return $this->assigneeName; }
@@ -92,6 +99,7 @@ final class TaskDTO
     public function stageId(): string { return $this->stageId; }
     public function stageName(): string { return $this->stageName; }
     public function position(): int { return $this->position; }
+    public function priority(): string { return $this->priority; }
     public function parentTaskId(): ?string { return $this->parentTaskId; }
     public function parentTaskName(): ?string { return $this->parentTaskName; }
     public function totalTimeSpent(): int { return $this->totalTimeSpent; }

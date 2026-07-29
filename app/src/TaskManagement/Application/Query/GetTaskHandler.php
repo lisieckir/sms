@@ -6,6 +6,7 @@ namespace App\TaskManagement\Application\Query;
 
 use App\BoardManagement\Domain\Model\WorkflowRepositoryInterface;
 use App\ClientManagement\Domain\Model\ClientRepositoryInterface;
+use App\Core\UI\Twig\MarkdownConverter;
 use App\IdentityAccess\Domain\Model\UserRepositoryInterface;
 use App\TaskManagement\Application\DTO\TaskDTO;
 use App\TaskManagement\Domain\Model\TaskId;
@@ -18,6 +19,7 @@ final class GetTaskHandler
         private WorkflowRepositoryInterface $workflowRepository,
         private UserRepositoryInterface $userRepository,
         private ClientRepositoryInterface $clientRepository,
+        private MarkdownConverter $markdownConverter,
     ) {}
 
     public function __invoke(GetTaskQuery $query): ?TaskDTO
@@ -53,6 +55,7 @@ final class GetTaskHandler
             'userName' => $resolveUser($c->userId()),
             'content' => $c->content(),
             'createdAt' => $c->createdAt()->format('c'),
+            'editedAt' => $c->editedAt()?->format('c'),
         ], $task->comments());
 
         $worklogs = array_map(fn($w) => [
@@ -96,10 +99,13 @@ final class GetTaskHandler
             }
         }
 
+        $description = $task->description()->value();
+
         return TaskDTO::fromArray([
             'id' => $task->id()->value(),
             'title' => $task->title(),
-            'description' => $task->description()->value(),
+            'description' => $description,
+            'descriptionHtml' => $this->markdownConverter->toHtml($description),
             'creatorId' => $task->creatorId(),
             'assigneeId' => $task->assigneeId(),
             'assigneeName' => $assigneeName,
@@ -108,6 +114,7 @@ final class GetTaskHandler
             'stageId' => $task->stageId(),
             'stageName' => $stageName,
             'position' => $task->position(),
+            'priority' => $task->priority()->value(),
             'parentTaskId' => $task->parentTaskId(),
             'parentTaskName' => $parentTaskName,
             'totalTimeSpent' => $totalTimeSpent,

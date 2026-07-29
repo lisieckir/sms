@@ -9,6 +9,7 @@ use App\TaskManagement\Domain\Model\Comment;
 use App\TaskManagement\Domain\Model\Task;
 use App\TaskManagement\Domain\Model\TaskDescription;
 use App\TaskManagement\Domain\Model\TaskId;
+use App\TaskManagement\Domain\Model\TaskPriority;
 use App\TaskManagement\Domain\Model\TaskRepositoryInterface;
 use App\TaskManagement\Domain\Model\Worklog;
 
@@ -32,6 +33,7 @@ final readonly class TaskRepository implements TaskRepositoryInterface
             'stageId' => $task->stageId(),
             'position' => $task->position(),
             'parentTaskId' => $task->parentTaskId(),
+            'priority' => $task->priority()->value(),
             'status' => $task->status(),
             'totalTimeSpent' => $task->totalTimeSpent(),
             'comments' => array_map(fn(Comment $c) => [
@@ -39,6 +41,7 @@ final readonly class TaskRepository implements TaskRepositoryInterface
                 'userId' => $c->userId(),
                 'content' => $c->content(),
                 'createdAt' => $c->createdAt()->format('c'),
+                'editedAt' => $c->editedAt()?->format('c'),
             ], $task->comments()),
             'worklogs' => array_map(fn(Worklog $w) => [
                 'id' => $w->id(),
@@ -157,6 +160,10 @@ final readonly class TaskRepository implements TaskRepositoryInterface
         $parentProp->setAccessible(true);
         $parentProp->setValue($instance, $fields['parentTaskId'] !== '' ? $fields['parentTaskId'] : null);
 
+        $priorityProp = $task->getProperty('priority');
+        $priorityProp->setAccessible(true);
+        $priorityProp->setValue($instance, new TaskPriority($fields['priority'] ?? 'medium'));
+
         $statusProp = $task->getProperty('status');
         $statusProp->setAccessible(true);
         $statusProp->setValue($instance, $fields['status']);
@@ -170,6 +177,7 @@ final readonly class TaskRepository implements TaskRepositoryInterface
                 $c['userId'],
                 $c['content'],
                 new \DateTimeImmutable($c['createdAt']),
+                isset($c['editedAt']) ? new \DateTimeImmutable($c['editedAt']) : null,
             ),
             $commentsData,
         ));

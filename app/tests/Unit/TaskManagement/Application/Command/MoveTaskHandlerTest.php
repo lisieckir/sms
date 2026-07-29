@@ -57,7 +57,7 @@ class MoveTaskHandlerTest extends TestCase
 
         $updated = $this->taskRepository->findById(new TaskId($taskId));
         $this->assertSame($this->stage2Id, $updated->stageId());
-        $this->assertSame(1, $updated->position());
+        $this->assertSame(0, $updated->position());
     }
 
     public function testMoveTaskNotFoundThrowsException(): void

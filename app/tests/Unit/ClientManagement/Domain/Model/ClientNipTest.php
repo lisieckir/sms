@@ -16,22 +16,22 @@ class ClientNipTest extends TestCase
         $this->assertSame('1234567890', (string) $nip);
     }
 
-    public function testCreateWithLessThan10DigitsThrowsException(): void
+    public function testCreateWithLessThan4CharsThrowsException(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        new ClientNip('123456789');
+        new ClientNip('123');
     }
 
-    public function testCreateWithMoreThan10DigitsThrowsException(): void
+    public function testCreateWithMoreThan20CharsThrowsException(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        new ClientNip('12345678901');
+        new ClientNip('123456789012345678901');
     }
 
-    public function testCreateWithNonNumericStringThrowsException(): void
+    public function testCreateWithSpacesThrowsException(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        new ClientNip('abcdefghij');
+        new ClientNip('abcd efgh');
     }
 
     public function testEquality(): void

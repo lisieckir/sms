@@ -65,15 +65,44 @@ class Workflow
 
     public function reorderStage(string $stageId, int $newPosition): void
     {
+        $index = null;
+        $oldPosition = null;
         foreach ($this->stages as $i => $stage) {
             if ($stage->id() === $stageId) {
-                $this->stages[$i] = $stage->move($newPosition);
-                $this->updatedAt = new \DateTimeImmutable();
-                return;
+                $index = $i;
+                $oldPosition = $stage->position();
+                break;
             }
         }
 
-        throw new \InvalidArgumentException("Stage $stageId not found");
+        if ($index === null) {
+            throw new \InvalidArgumentException("Stage $stageId not found");
+        }
+
+        if ($oldPosition === $newPosition) {
+            return;
+        }
+
+        $target = $this->stages[$index];
+        unset($this->stages[$index]);
+        $this->stages = array_values($this->stages);
+
+        if ($newPosition < $oldPosition) {
+            foreach ($this->stages as $i => $s) {
+                if ($s->position() >= $newPosition && $s->position() < $oldPosition) {
+                    $this->stages[$i] = $s->move($s->position() + 1);
+                }
+            }
+        } else {
+            foreach ($this->stages as $i => $s) {
+                if ($s->position() > $oldPosition && $s->position() <= $newPosition) {
+                    $this->stages[$i] = $s->move($s->position() - 1);
+                }
+            }
+        }
+
+        $this->stages[] = $target->move($newPosition);
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function removeStage(string $stageId): void

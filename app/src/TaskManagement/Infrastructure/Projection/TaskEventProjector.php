@@ -6,6 +6,8 @@ namespace App\TaskManagement\Infrastructure\Projection;
 
 use App\TaskManagement\Infrastructure\PocketBase\TaskEventStore;
 use App\TaskManagement\Domain\Event\CommentAdded;
+use App\TaskManagement\Domain\Event\CommentEdited;
+use App\TaskManagement\Domain\Event\CommentRemoved;
 use App\TaskManagement\Domain\Event\TaskAssigned;
 use App\TaskManagement\Domain\Event\TaskClientChanged;
 use App\TaskManagement\Domain\Event\TaskCreated;
@@ -29,6 +31,8 @@ class TaskEventProjector
             $event instanceof TaskClientChanged => $this->projectTaskClientChanged($event),
             $event instanceof TaskDescriptionChanged => $this->projectTaskDescriptionChanged($event),
             $event instanceof CommentAdded => $this->projectCommentAdded($event),
+            $event instanceof CommentEdited => $this->projectCommentEdited($event),
+            $event instanceof CommentRemoved => $this->projectCommentRemoved($event),
             $event instanceof WorklogAdded => $this->projectWorklogAdded($event),
             default => null,
         };
@@ -41,7 +45,7 @@ class TaskEventProjector
             taskId: $event->taskId()->value(),
             userId: $event->creatorId(),
             type: 'TaskCreated',
-            data: ['title' => $event->title(), 'stageId' => $event->stageId()],
+            data: ['title' => $event->title(), 'stageId' => $event->stageId(), 'priority' => $event->priority()->value()],
             occurredAt: $event->occurredAt(),
         );
     }
@@ -101,6 +105,34 @@ class TaskEventProjector
             taskId: $event->taskId()->value(),
             userId: $event->userId(),
             type: 'CommentAdded',
+            data: ['commentId' => $event->commentId()],
+            occurredAt: $event->occurredAt(),
+        );
+    }
+
+    private function projectCommentEdited(CommentEdited $event): void
+    {
+        $this->eventStore->append(
+            eventId: Uuid::v4()->toRfc4122(),
+            taskId: $event->taskId()->value(),
+            userId: $event->userId(),
+            type: 'CommentEdited',
+            data: [
+                'commentId' => $event->commentId(),
+                'oldContent' => $event->oldContent(),
+                'newContent' => $event->newContent(),
+            ],
+            occurredAt: $event->occurredAt(),
+        );
+    }
+
+    private function projectCommentRemoved(CommentRemoved $event): void
+    {
+        $this->eventStore->append(
+            eventId: Uuid::v4()->toRfc4122(),
+            taskId: $event->taskId()->value(),
+            userId: $event->userId(),
+            type: 'CommentRemoved',
             data: ['commentId' => $event->commentId()],
             occurredAt: $event->occurredAt(),
         );

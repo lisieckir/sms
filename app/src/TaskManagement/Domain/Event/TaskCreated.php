@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\TaskManagement\Domain\Event;
 
 use App\TaskManagement\Domain\Model\TaskId;
+use App\TaskManagement\Domain\Model\TaskPriority;
 
 final class TaskCreated implements DomainEvent
 {
@@ -13,6 +14,7 @@ final class TaskCreated implements DomainEvent
         private string $title,
         private string $creatorId,
         private string $stageId,
+        private TaskPriority $priority,
         private \DateTimeImmutable $occurredAt,
     ) {}
 
@@ -20,5 +22,6 @@ final class TaskCreated implements DomainEvent
     public function title(): string { return $this->title; }
     public function creatorId(): string { return $this->creatorId; }
     public function stageId(): string { return $this->stageId; }
+    public function priority(): TaskPriority { return $this->priority; }
     public function occurredAt(): \DateTimeImmutable { return $this->occurredAt; }
 }

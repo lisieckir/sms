@@ -46,6 +46,23 @@ class AddCommentHandlerTest extends TestCase
         $this->assertSame('A new comment', $updated->comments()[0]->content());
     }
 
+    public function testAddCommentWithMultilineContent(): void
+    {
+        $task = $this->createTask();
+        $multiline = "First line\nSecond line\n\nThird paragraph";
+
+        $this->handler->__invoke(new AddCommentCommand(
+            taskId: $task->id()->value(),
+            userId: 'user-1',
+            content: $multiline,
+        ));
+
+        $updated = $this->taskRepository->findById($task->id());
+        $this->assertCount(1, $updated->comments());
+        $this->assertSame($multiline, $updated->comments()[0]->content());
+        $this->assertStringContainsString("\n", $updated->comments()[0]->content());
+    }
+
     public function testAddCommentProjectsEvent(): void
     {
         $task = $this->createTask();

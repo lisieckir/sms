@@ -11,14 +11,16 @@ final class RegisterClientCommand
         private string $name,
         private string $address,
         private string $country,
-        private string $email,
+        private ?string $email = null,
         private string $description = '',
+        private ?string $settlementType = null,
     ) {}
 
     public function nip(): string { return $this->nip; }
     public function name(): string { return $this->name; }
     public function address(): string { return $this->address; }
     public function country(): string { return $this->country; }
-    public function email(): string { return $this->email; }
+    public function email(): ?string { return $this->email; }
     public function description(): string { return $this->description; }
+    public function settlementType(): ?string { return $this->settlementType; }
 }

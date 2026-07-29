@@ -5,10 +5,11 @@ set -e
 
 REMOTE_HOST="${REMOTE_HOST:?usage: REMOTE_HOST=sms.mikr.us ./setup-server.sh}"
 REMOTE_USER="${REMOTE_USER:-root}"
+SSH_PORT="${SSH_PORT:-22}"
 SSH_KEY="${SSH_KEY:-}"
 PHP_VERSION="${PHP_VERSION:-83}"
 
-SSH_CMD="ssh ${SSH_KEY:+-i $SSH_KEY} -o StrictHostKeyChecking=accept-new"
+SSH_CMD="ssh ${SSH_KEY:+-i $SSH_KEY} -p $SSH_PORT -o StrictHostKeyChecking=accept-new"
 
 info() { printf "\033[1;34m==>\033[0m %s\n" "$*"; }
 ok()   { printf "\033[1;32m OK\033[0m  %s\n" "$*"; }

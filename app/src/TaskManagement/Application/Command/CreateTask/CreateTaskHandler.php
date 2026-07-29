@@ -6,6 +6,7 @@ namespace App\TaskManagement\Application\Command\CreateTask;
 
 use App\TaskManagement\Domain\Model\Task;
 use App\TaskManagement\Domain\Model\TaskDescription;
+use App\TaskManagement\Domain\Model\TaskPriority;
 use App\TaskManagement\Domain\Model\TaskRepositoryInterface;
 use App\TaskManagement\Infrastructure\Projection\TaskEventProjector;
 
@@ -29,6 +30,7 @@ final class CreateTaskHandler
             assigneeId: $command->assigneeId(),
             clientId: $command->clientId(),
             parentTaskId: $command->parentTaskId(),
+            priority: $command->priority() !== null ? new TaskPriority($command->priority()) : null,
         );
         $this->taskRepository->save($task);
 

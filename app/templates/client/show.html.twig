@@ -32,7 +32,16 @@
                     </div>
                     <div>
                         <dt class="text-xs text-gray-500 uppercase">Email</dt>
-                        <dd class="text-sm font-medium text-gray-700">{{ client.email }}</dd>
+                        <dd class="text-sm font-medium text-gray-700">{{ client.email ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-gray-500 uppercase">Sposób rozliczenia</dt>
+                        <dd class="text-sm font-medium text-gray-700">
+                            {% if client.settlementType.value == 'b2b' %}B2B
+                            {% elseif client.settlementType.value == 'useme' %}Useme
+                            {% elseif client.settlementType.value == 'umowa_zlecenie' %}Umowa zlecenie
+                            {% else %}{{ client.settlementType.value }}{% endif %}
+                        </dd>
                     </div>
                     <div>
                         <dt class="text-xs text-gray-500 uppercase">Country</dt>
@@ -84,12 +93,22 @@
         <div class="space-y-6">
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Actions</h2>
-                <form method="post" action="{{ path('app_client_toggle_block', {id: client.id.value}) }}">
-                    <button type="submit"
-                            class="w-full px-4 py-2 rounded-lg text-white {{ client.isActive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' }}">
-                        {{ client.isActive ? 'Block Client' : 'Unblock Client' }}
-                    </button>
-                </form>
+                <div class="space-y-3">
+                    {% if client.isDeleted %}
+                        <form method="post" action="{{ path('app_client_restore', {id: client.id.value}) }}">
+                            <button type="submit" class="w-full px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700">Restore Client</button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{{ path('app_client_toggle_block', {id: client.id.value}) }}">
+                            <button type="submit" class="w-full px-4 py-2 rounded-lg text-white {{ client.isActive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' }}">
+                                {{ client.isActive ? 'Block Client' : 'Unblock Client' }}
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('app_client_delete', {id: client.id.value}) }}" onsubmit="return confirm('Delete this client?')">
+                            <button type="submit" class="w-full px-4 py-2 rounded-lg text-white bg-red-700 hover:bg-red-800">Delete Client</button>
+                        </form>
+                    {% endif %}
+                </div>
             </div>
 
             <div class="bg-white rounded-lg shadow p-6">

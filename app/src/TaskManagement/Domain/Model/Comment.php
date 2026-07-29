@@ -13,6 +13,7 @@ final readonly class Comment
         private string $userId,
         private string $content,
         private \DateTimeImmutable $createdAt,
+        private ?\DateTimeImmutable $editedAt = null,
     ) {
         if (empty($content)) {
             throw new \InvalidArgumentException('Comment content cannot be empty');
@@ -25,6 +26,21 @@ final readonly class Comment
             Uuid::v4()->toRfc4122(),
             $userId,
             $content,
+            new \DateTimeImmutable(),
+        );
+    }
+
+    public function withContent(string $newContent): self
+    {
+        if (empty($newContent)) {
+            throw new \InvalidArgumentException('Comment content cannot be empty');
+        }
+
+        return new self(
+            $this->id,
+            $this->userId,
+            $newContent,
+            $this->createdAt,
             new \DateTimeImmutable(),
         );
     }
@@ -47,5 +63,10 @@ final readonly class Comment
     public function createdAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function editedAt(): ?\DateTimeImmutable
+    {
+        return $this->editedAt;
     }
 }

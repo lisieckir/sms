@@ -15,10 +15,12 @@ use App\TaskManagement\Application\Command\AddWorklog\AddWorklogCommand;
 use App\TaskManagement\Application\Command\AssignClient\AssignClientCommand;
 use App\TaskManagement\Application\Command\AssignTask\AssignTaskCommand;
 use App\TaskManagement\Application\Command\CreateTask\CreateTaskCommand;
+use App\TaskManagement\Application\Command\DeleteComment\DeleteCommentCommand;
+use App\TaskManagement\Application\Command\EditComment\EditCommentCommand;
 use App\TaskManagement\Application\Command\MoveTask\MoveTaskCommand;
 use App\TaskManagement\Application\Query\GetTaskHandler;
 use App\TaskManagement\Application\Query\GetTaskQuery;
-use App\TaskManagement\Infrastructure\Projection\TaskEventStore;
+use App\TaskManagement\Infrastructure\PocketBase\TaskEventStore;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,6 +46,7 @@ class TaskController extends AbstractController
                 creatorId: $this->getUser()->getUserId(),
                 stageId: $request->request->get('stageId'),
                 position: (int) $request->request->get('position', 0),
+                priority: $request->request->get('priority') ?: null,
                 assigneeId: $request->request->get('assigneeId') ?: null,
                 clientId: $request->request->get('clientId') ?: null,
             ));
@@ -101,6 +104,42 @@ class TaskController extends AbstractController
         ));
 
         $this->addFlash('success', 'Comment added');
+        return $this->redirectToRoute('app_task_show', ['id' => $id]);
+    }
+
+    #[Route('/task/{id}/comment/{commentId}/edit', name: 'app_task_comment_edit', methods: ['POST'])]
+    public function editComment(
+        string $id,
+        string $commentId,
+        Request $request,
+        MessageBusInterface $commandBus,
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $commandBus->dispatch(new EditCommentCommand(
+            taskId: $id,
+            commentId: $commentId,
+            content: $request->request->get('content'),
+        ));
+
+        $this->addFlash('success', 'Comment edited');
+        return $this->redirectToRoute('app_task_show', ['id' => $id]);
+    }
+
+    #[Route('/task/{id}/comment/{commentId}/delete', name: 'app_task_comment_delete', methods: ['POST'])]
+    public function deleteComment(
+        string $id,
+        string $commentId,
+        MessageBusInterface $commandBus,
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $commandBus->dispatch(new DeleteCommentCommand(
+            taskId: $id,
+            commentId: $commentId,
+        ));
+
+        $this->addFlash('success', 'Comment deleted');
         return $this->redirectToRoute('app_task_show', ['id' => $id]);
     }
 
@@ -245,16 +284,17 @@ class TaskController extends AbstractController
             return $stageNames[$stageId];
         };
 
-        foreach ($events as $event) {
-            if ($event->type === 'TaskAssigned') {
-                $event->data['newAssigneeName'] = $resolveUser($event->data['newAssigneeId'] ?? null);
-                $event->data['oldAssigneeName'] = $resolveUser($event->data['oldAssigneeId'] ?? null);
+        foreach ($events as &$event) {
+            if ($event['type'] === 'TaskAssigned') {
+                $event['data']['newAssigneeName'] = $resolveUser($event['data']['newAssigneeId'] ?? null);
+                $event['data']['oldAssigneeName'] = $resolveUser($event['data']['oldAssigneeId'] ?? null);
             }
-            if ($event->type === 'TaskMoved') {
-                $event->data['fromStageName'] = $resolveStage($event->data['fromStageId'] ?? '');
-                $event->data['toStageName'] = $resolveStage($event->data['toStageId'] ?? '');
+            if ($event['type'] === 'TaskMoved') {
+                $event['data']['fromStageName'] = $resolveStage($event['data']['fromStageId'] ?? '');
+                $event['data']['toStageName'] = $resolveStage($event['data']['toStageId'] ?? '');
             }
         }
+        unset($event);
 
         return $this->render('task/history.html.twig', [
             'events' => $events,

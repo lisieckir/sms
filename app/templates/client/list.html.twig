@@ -16,7 +16,8 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIP</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rozliczenie</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -30,7 +31,13 @@
                         </a>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ client.nip.value }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ client.email }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">
+                        {% if client.settlementType.value == 'b2b' %}B2B
+                        {% elseif client.settlementType.value == 'useme' %}Useme
+                        {% elseif client.settlementType.value == 'umowa_zlecenie' %}Umowa zlecenie
+                        {% else %}{{ client.settlementType.value }}{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ client.address }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 py-0.5 rounded-full text-xs {{ client.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                             {{ client.status }}
@@ -38,12 +45,15 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <a href="{{ path('app_client_show', {id: client.id.value}) }}" class="text-indigo-600 hover:text-indigo-800 mr-3">View</a>
-                        <a href="{{ path('app_client_edit', {id: client.id.value}) }}" class="text-indigo-600 hover:text-indigo-800">Edit</a>
+                        <a href="{{ path('app_client_edit', {id: client.id.value}) }}" class="text-indigo-600 hover:text-indigo-800 mr-3">Edit</a>
+                        <form method="post" action="{{ path('app_client_delete', {id: client.id.value}) }}" class="inline" onsubmit="return confirm('Delete this client?')">
+                            <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
+                        </form>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">No clients yet.</td>
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">No clients yet.</td>
                 </tr>
                 {% endfor %}
             </tbody>

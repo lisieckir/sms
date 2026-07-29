@@ -1,11 +1,16 @@
 parameters:
 
 services:
+    sms.line_formatter:
+        class: Monolog\Formatter\LineFormatter
+        arguments:
+            - "[%%datetime%%] %%channel%%.%%level_name%%: %%message%% %%context%% %%extra%%\n"
     _defaults:
         autowire: true
         autoconfigure: true
         bind:
             string $pocketbaseUrl: '%env(POCKETBASE_URL)%'
+            string $migrationDir: '%kernel.project_dir%/src/Core/Infrastructure/PocketBase/Migration'
 
     App\:
         resource: '../src/'
@@ -139,6 +144,14 @@ services:
             - { name: messenger.message_handler, bus: command.bus }
 
     App\ClientManagement\Application\Command\AddContact\AddContactHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\ClientManagement\Application\Command\DeleteClient\DeleteClientHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\ClientManagement\Application\Command\RestoreClient\RestoreClientHandler:
         tags:
             - { name: messenger.message_handler, bus: command.bus }
 

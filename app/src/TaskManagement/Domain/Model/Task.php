@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\TaskManagement\Domain\Model;
 
 use App\TaskManagement\Domain\Event\CommentAdded;
+use App\TaskManagement\Domain\Event\CommentEdited;
+use App\TaskManagement\Domain\Event\CommentRemoved;
 use App\TaskManagement\Domain\Event\TaskAssigned;
 use App\TaskManagement\Domain\Event\TaskClientChanged;
 use App\TaskManagement\Domain\Event\TaskCreated;
@@ -31,6 +33,7 @@ class Task
         private ?string $clientId,
         private string $stageId,
         private int $position,
+        private TaskPriority $priority,
         private ?string $parentTaskId,
         private string $status,
         private \DateTimeImmutable $createdAt,
@@ -48,7 +51,9 @@ class Task
         ?string $assigneeId = null,
         ?string $clientId = null,
         ?string $parentTaskId = null,
+        ?TaskPriority $priority = null,
     ): self {
+        $priority = $priority ?? new TaskPriority('medium');
         $task = new self(
             $id,
             $title,
@@ -58,11 +63,12 @@ class Task
             $clientId,
             $stageId,
             $position,
+            $priority,
             $parentTaskId,
             'active',
             new \DateTimeImmutable(),
         );
-        $task->recordEvent(new TaskCreated($id, $title, $creatorId, $stageId, new \DateTimeImmutable()));
+        $task->recordEvent(new TaskCreated($id, $title, $creatorId, $stageId, $priority, new \DateTimeImmutable()));
         return $task;
     }
 
@@ -114,6 +120,33 @@ class Task
         $this->comments[] = $comment;
         $this->updatedAt = new \DateTimeImmutable();
         $this->recordEvent(new CommentAdded($this->id, $comment->id(), $userId, new \DateTimeImmutable()));
+    }
+
+    public function editComment(string $commentId, string $newContent): void
+    {
+        foreach ($this->comments as $i => $comment) {
+            if ($comment->id() === $commentId) {
+                $oldContent = $comment->content();
+                $this->comments[$i] = $comment->withContent($newContent);
+                $this->updatedAt = new \DateTimeImmutable();
+                $this->recordEvent(new CommentEdited($this->id, $commentId, $comment->userId(), $oldContent, $newContent, new \DateTimeImmutable()));
+                return;
+            }
+        }
+        throw new \InvalidArgumentException('Comment not found');
+    }
+
+    public function removeComment(string $commentId): void
+    {
+        foreach ($this->comments as $i => $comment) {
+            if ($comment->id() === $commentId) {
+                array_splice($this->comments, $i, 1);
+                $this->updatedAt = new \DateTimeImmutable();
+                $this->recordEvent(new CommentRemoved($this->id, $commentId, $comment->userId(), new \DateTimeImmutable()));
+                return;
+            }
+        }
+        throw new \InvalidArgumentException('Comment not found');
     }
 
     public function addWorklog(string $userId, int $minutes, string $description): void
@@ -169,6 +202,11 @@ class Task
     public function position(): int
     {
         return $this->position;
+    }
+
+    public function priority(): TaskPriority
+    {
+        return $this->priority;
     }
 
     public function parentTaskId(): ?string

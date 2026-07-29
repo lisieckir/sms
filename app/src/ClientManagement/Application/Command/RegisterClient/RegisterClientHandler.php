@@ -7,6 +7,7 @@ namespace App\ClientManagement\Application\Command\RegisterClient;
 use App\ClientManagement\Domain\Model\Client;
 use App\ClientManagement\Domain\Model\ClientNip;
 use App\ClientManagement\Domain\Model\ClientRepositoryInterface;
+use App\ClientManagement\Domain\Model\ClientSettlementType;
 
 final class RegisterClientHandler
 {
@@ -25,6 +26,7 @@ final class RegisterClientHandler
             country: $command->country(),
             email: $command->email(),
             description: $command->description(),
+            settlementType: $command->settlementType() !== null ? new ClientSettlementType($command->settlementType()) : null,
         );
         $this->clientRepository->save($client);
         return $id->value();

@@ -12,6 +12,7 @@ final class CreateTaskCommand
         private string $creatorId,
         private string $stageId,
         private int $position,
+        private ?string $priority = null,
         private ?string $assigneeId = null,
         private ?string $clientId = null,
         private ?string $parentTaskId = null,
@@ -22,6 +23,7 @@ final class CreateTaskCommand
     public function creatorId(): string { return $this->creatorId; }
     public function stageId(): string { return $this->stageId; }
     public function position(): int { return $this->position; }
+    public function priority(): ?string { return $this->priority; }
     public function assigneeId(): ?string { return $this->assigneeId; }
     public function clientId(): ?string { return $this->clientId; }
     public function parentTaskId(): ?string { return $this->parentTaskId; }
