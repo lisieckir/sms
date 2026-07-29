@@ -12,6 +12,7 @@ APP_SECRET=change_this_to_random_string
 MAILER_DSN=smtp://user:pass@smtp.example.com:587
 DEFAULT_URI=https://sms.mikr.us
 
-# PocketBase admin credentials (for schema migrations via app:pocketbase:migrate)
+# PocketBase admin credentials (fallback if no token file on server)
+# Better: run deploy/setup-pb-token.sh once per server, remove these lines
 POCKETBASE_ADMIN_EMAIL=admin@sidegigs.local
 POCKETBASE_ADMIN_PASSWORD=admin123

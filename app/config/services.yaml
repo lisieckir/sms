@@ -114,6 +114,10 @@ services:
         tags:
             - { name: messenger.message_handler, bus: command.bus }
 
+    App\TaskManagement\Application\Command\DeleteComment\DeleteCommentHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
     App\TaskManagement\Application\Command\AddWorklog\AddWorklogHandler:
         tags:
             - { name: messenger.message_handler, bus: command.bus }

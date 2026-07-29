@@ -162,7 +162,7 @@ final readonly class TaskRepository implements TaskRepositoryInterface
 
         $priorityProp = $task->getProperty('priority');
         $priorityProp->setAccessible(true);
-        $priorityProp->setValue($instance, new TaskPriority($fields['priority'] ?? 'medium'));
+        $priorityProp->setValue($instance, new TaskPriority($fields['priority'] ?: 'medium'));
 
         $statusProp = $task->getProperty('status');
         $statusProp->setAccessible(true);

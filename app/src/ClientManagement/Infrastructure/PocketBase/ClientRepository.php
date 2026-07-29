@@ -114,7 +114,7 @@ final readonly class ClientRepository implements ClientRepositoryInterface
 
         $settlementProp = $client->getProperty('settlementType');
         $settlementProp->setAccessible(true);
-        $settlementProp->setValue($instance, new ClientSettlementType($fields['settlementType'] ?? ClientSettlementType::B2B));
+        $settlementProp->setValue($instance, new ClientSettlementType($fields['settlementType'] ?: ClientSettlementType::B2B));
 
         $statusProp = $client->getProperty('status');
         $statusProp->setAccessible(true);

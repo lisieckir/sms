@@ -40,6 +40,9 @@ step()  {
     echo "$out" | sed "s/^/  $prefix: /"
     return "$rc"
 }
+pocketbase_token() {
+    remote "cat /etc/sms/.pocketbase_token 2>/dev/null || true"
+}
 
 if [ "$APP_SECRET" = "change_this_to_random_string" ]; then
     die "Edit APP_SECRET in your inventory file - do not use the example value."
@@ -99,7 +102,24 @@ step "console" "cd $REMOTE_PATH/app && APP_ENV=prod APP_DEBUG=0 $PHP_BINARY bin/
 ok "Cache warmed"
 
 info "Running PocketBase schema migrations"
-step "migrate" "cd $REMOTE_PATH/app && POCKETBASE_ADMIN_EMAIL='${POCKETBASE_ADMIN_EMAIL}' POCKETBASE_ADMIN_PASSWORD='${POCKETBASE_ADMIN_PASSWORD}' $PHP_BINARY bin/console app:pocketbase:migrate --no-interaction" || die "PocketBase migration failed"
+PB_TOKEN=$(pocketbase_token)
+if [ -z "$PB_TOKEN" ] && [ -n "${POCKETBASE_ADMIN_EMAIL}" ] && [ -n "${POCKETBASE_ADMIN_PASSWORD}" ]; then
+    info "No token found — provisioning one from inventory credentials"
+    PB_TOKEN=$(remote "curl -s -X POST 'http://127.0.0.1:8090/api/collections/_superusers/auth-with-password' \
+        -H 'Content-Type: application/json' \
+        -d '{\"identity\":\"${POCKETBASE_ADMIN_EMAIL}\",\"password\":\"${POCKETBASE_ADMIN_PASSWORD}\"}' | jq -r '.token'")
+    if [ -n "$PB_TOKEN" ] && [ "$PB_TOKEN" != "null" ]; then
+        remote "mkdir -p /etc/sms && echo '$PB_TOKEN' > /etc/sms/.pocketbase_token && chmod 600 /etc/sms/.pocketbase_token"
+        info "Token saved to /etc/sms/.pocketbase_token — POCKETBASE_ADMIN_PASSWORD can be removed from inventory"
+    else
+        die "Failed to obtain token from inventory credentials"
+    fi
+fi
+if [ -n "$PB_TOKEN" ]; then
+    step "migrate" "cd $REMOTE_PATH/app && $PHP_BINARY bin/console app:pocketbase:migrate --token='${PB_TOKEN}' --no-interaction" || die "PocketBase migration failed"
+else
+    step "migrate" "cd $REMOTE_PATH/app && POCKETBASE_ADMIN_EMAIL='${POCKETBASE_ADMIN_EMAIL}' POCKETBASE_ADMIN_PASSWORD='${POCKETBASE_ADMIN_PASSWORD}' $PHP_BINARY bin/console app:pocketbase:migrate --no-interaction" || die "PocketBase migration failed (set POCKETBASE_ADMIN_EMAIL/PASSWORD in inventory, or run deploy/setup-pb-token.sh)"
+fi
 ok "Migrations complete"
 
 info "Restarting PHP-FPM"

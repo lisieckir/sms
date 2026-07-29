@@ -19,7 +19,11 @@ final readonly class UserIdentityProvider implements UserProviderInterface
 
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        $user = $this->userRepository->findByEmail(new UserEmail($identifier));
+        try {
+            $user = $this->userRepository->findByEmail(new UserEmail($identifier));
+        } catch (\InvalidArgumentException) {
+            $user = null;
+        }
         if ($user === null) {
             $user = $this->userRepository->findByUsername($identifier);
         }

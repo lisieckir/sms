@@ -8,7 +8,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class MigrationManager
 {
-    private const MIGRATIONS_COLLECTION = '_migrations';
+    private const MIGRATIONS_COLLECTION = 'app_migrations';
 
     private string $baseUrl;
 
@@ -171,7 +171,19 @@ final readonly class MigrationManager
             $options['query'] = $query;
         }
 
-        $response = $this->httpClient->request($method, $this->baseUrl . $path, $options);
-        return $response->toArray();
+        try {
+            $response = $this->httpClient->request($method, $this->baseUrl . $path, $options);
+            return $response->toArray();
+        } catch (\Throwable $e) {
+            try {
+                $content = $e->getResponse()?->getContent(false) ?? 'no response body';
+            } catch (\Throwable) {
+                $content = 'could not read response';
+            }
+            throw new \RuntimeException(sprintf(
+                '%s %s failed: %s — body: %s',
+                $method, $this->baseUrl . $path, $e->getMessage(), $content
+            ));
+        }
     }
 }
