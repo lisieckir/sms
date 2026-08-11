@@ -3,9 +3,9 @@
 {% block title %}{{ task.title }}{% endblock %}
 
 {% block body %}
-<div class="max-w-4xl mx-auto px-4 py-8">
+<div class="page-frame task-view">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">{{ task.title }}</h1>
+        <div><div class="eyebrow">Task / {{ task.id|slice(0, 8) }}</div><h1 class="display-title">{{ task.title }}</h1></div>
         <a href="{{ path('app_board') }}" class="text-indigo-600 hover:text-indigo-800">Back to Board</a>
     </div>
 
@@ -95,19 +95,29 @@
                     <h2 class="text-lg font-semibold text-gray-800">Comments</h2>
                 </div>
 
-                <form method="post" action="{{ path('app_task_comment', {id: task.id}) }}" class="mb-4">
-                    <textarea name="content" rows="2" placeholder="Add a comment..." required
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                <form method="post" action="{{ path('app_task_comment', {id: task.id}) }}" class="mb-5" x-data="{ text: '', insert(markup) { let ta = this.$refs.commentText; let start = ta.selectionStart; let end = ta.selectionEnd; let selected = this.text.substring(start, end); this.text = this.text.substring(0, start) + markup.replace('$1', selected) + this.text.substring(end); this.$nextTick(() => { ta.focus(); ta.selectionStart = ta.selectionEnd = start + markup.indexOf('$1') + (selected ? selected.length : 0); }); } }">
+                    <div class="comment-toolbar">
+                        <button type="button" @click="insert('**$1**')" title="Bold"><strong>B</strong></button>
+                        <button type="button" @click="insert('*$1*')" title="Italic"><em>I</em></button>
+                        <button type="button" @click="insert('`$1`')" title="Inline code"><code>&lt;/&gt;</code></button>
+                        <span></span>
+                        <button type="button" @click="insert('\n- $1\n')" title="List">•</button>
+                        <button type="button" @click="insert('[$1](url)')" title="Link">↗</button>
+                        <button type="button" @click="insert('\n> $1\n')" title="Quote">&quot;</button>
+                        <button type="button" @click="insert('\n```\n$1\n```\n')" title="Code block"><code>```</code></button>
+                    </div>
+                    <textarea name="content" rows="4" placeholder="Napisz komentarz..." required x-model="text" x-ref="commentText"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-b-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
                     <button type="submit" class="mt-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm">Add Comment</button>
                 </form>
 
                 {% if task.comments|length > 0 %}
                 <div class="space-y-3">
                     {% for comment in task.comments %}
-                    <div class="bg-gray-50 rounded-lg p-3" x-data="{ editing: false, text: '{{ comment.content|e('js') }}' }">
+                    <div class="bg-gray-50 rounded-lg p-3" x-data="{ editing: false, text: '{{ comment.content|e('js') }}', insert(markup) { let ta = this.$root.querySelector('textarea'); let start = ta.selectionStart; let end = ta.selectionEnd; let selected = this.text.substring(start, end); this.text = this.text.substring(0, start) + markup.replace('$1', selected) + this.text.substring(end); this.$nextTick(() => { ta.focus(); ta.selectionStart = ta.selectionEnd = start + markup.indexOf('$1') + (selected ? selected.length : 0); }); } }">
                         <template x-if="!editing">
                             <div>
-                                <p class="text-gray-700 text-sm">{{ comment.content|nl2br }}</p>
+                                <div class="prose prose-sm max-w-none text-gray-700">{{ comment.contentHtml|raw }}</div>
                                 <p class="text-xs text-gray-500 mt-1">
                                     <span class="font-medium text-indigo-600">@{{ comment.userName ?? comment.userId }}</span>
                                     &middot; {{ comment.createdAt|date('Y-m-d H:i') }}
@@ -127,7 +137,17 @@
                         </template>
                         <template x-if="editing">
                             <div>
-                                <textarea x-model="text" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"></textarea>
+                                <div class="comment-toolbar">
+                                    <button type="button" @click="insert('**$1**')" title="Bold"><strong>B</strong></button>
+                                    <button type="button" @click="insert('*$1*')" title="Italic"><em>I</em></button>
+                                    <button type="button" @click="insert('`$1`')" title="Inline code"><code>&lt;/&gt;</code></button>
+                                    <span></span>
+                                    <button type="button" @click="insert('\n- $1\n')" title="List">•</button>
+                                    <button type="button" @click="insert('[$1](url)')" title="Link">↗</button>
+                                    <button type="button" @click="insert('\n> $1\n')" title="Quote">&quot;</button>
+                                    <button type="button" @click="insert('\n```\n$1\n```\n')" title="Code block"><code>```</code></button>
+                                </div>
+                                <textarea x-model="text" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-b-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"></textarea>
                                 <div class="mt-2 flex gap-2">
                                     <button @click="fetch('{{ path('app_task_comment_edit', {id: task.id, commentId: comment.id}) }}', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'content=' + encodeURIComponent(text) }).then(() => location.reload())" class="px-3 py-1 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700">Save</button>
                                     <button @click="editing = false" class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
@@ -341,4 +361,10 @@
         </div>
     </div>
 </div>
+<style>
+    .task-view{max-width:1180px}.task-view .bg-white{border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 28px rgba(24,35,43,.045)}.task-view h2{letter-spacing:-.03em}.task-view textarea,.task-view input,.task-view select{border-color:#dce2de!important;border-radius:10px!important}.task-view button.bg-indigo-600,.task-view button.bg-green-600{background:var(--coral)}.task-view button.bg-indigo-600:hover,.task-view button.bg-green-600:hover{background:var(--coral-dark)}
+    @media(max-width:700px){.task-view .grid{gap:16px}.task-view .flex.gap-2{flex-wrap:wrap}.task-view .flex.gap-2 input.flex-1{min-width:100%}}
+    .task-view .prose p{margin:0 0 .85rem;line-height:1.7}.task-view .prose p:last-child{margin-bottom:0}.task-view .prose br{line-height:1.7}
+    .comment-toolbar{display:flex;align-items:center;gap:2px;padding:5px 6px;border:1px solid #dce2de;border-bottom:0;border-radius:10px 10px 0 0;background:#f5f7f5}.comment-toolbar button{width:28px;height:26px;border:0;border-radius:6px;background:transparent;color:#607069;font-size:13px}.comment-toolbar button:hover{background:#e4ebe6;color:var(--coral-dark)}.comment-toolbar span{width:1px;height:18px;background:#d5ddd8;margin:0 5px}.comment-toolbar code{font-family:'DM Mono',monospace;font-size:10px}
+</style>
 {% endblock %}

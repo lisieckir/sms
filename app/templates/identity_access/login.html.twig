@@ -3,9 +3,10 @@
 {% block title %}Login - Sidegigs Management{% endblock %}
 
 {% block body %}
-<div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Sign in</h1>
+<div class="login-page">
+    <div class="login-aside"><span class="brand-mark">S</span><p class="eyebrow">Sidegigs OS</p><h1>Praca, która<br><em>ma swój rytm.</em></h1><p class="login-note">Twoje zlecenia, klienci i czas w jednym spokojnym miejscu.</p></div>
+    <div class="login-card surface">
+        <div class="eyebrow">Welcome back</div><h1 class="text-3xl font-extrabold mt-2 mb-2">Witaj ponownie.</h1><p class="text-sm text-gray-500 mb-7">Zaloguj się, żeby wrócić do pracy.</p>
 
         {% if error %}
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -37,4 +38,8 @@
         </form>
     </div>
 </div>
+<style>
+    .login-page{min-height:calc(100vh - 0px);display:grid;grid-template-columns:1fr 1fr;background:#eef1ed}.login-aside{padding:clamp(40px,9vw,140px);background:var(--ink);color:#fff}.login-aside .brand-mark{margin-bottom:70px}.login-aside h1{font-size:clamp(42px,5vw,76px);line-height:.98;letter-spacing:-.08em;margin:16px 0 28px}.login-aside h1 em{color:#ef856a;font-style:normal}.login-note{max-width:280px;color:#aebbbe;font-size:14px;line-height:1.7}.login-card{align-self:center;width:min(100% - 48px,450px);padding:42px;margin:auto}.login-card input{border-radius:10px;border-color:#dce2de;padding:13px}.login-card button{background:var(--coral);border-radius:10px;font-weight:800;padding:13px}.login-card button:hover{background:var(--coral-dark)}
+    @media(max-width:700px){.login-page{display:block;min-height:100vh}.login-aside{padding:34px 24px 42px}.login-aside .brand-mark{margin-bottom:32px}.login-aside h1{font-size:42px;margin-bottom:0}.login-note{display:none}.login-card{width:calc(100% - 32px);padding:28px 22px;margin:-12px auto 0;position:relative}}
+</style>
 {% endblock %}

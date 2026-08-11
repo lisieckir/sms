@@ -54,6 +54,7 @@ final class GetTaskHandler
             'userId' => $c->userId(),
             'userName' => $resolveUser($c->userId()),
             'content' => $c->content(),
+            'contentHtml' => $this->markdownConverter->toHtml($c->content()),
             'createdAt' => $c->createdAt()->format('c'),
             'editedAt' => $c->editedAt()?->format('c'),
         ], $task->comments());

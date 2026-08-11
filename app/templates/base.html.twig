@@ -1,34 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sidegigs Management{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script src="https://unpkg.com/alpinejs@3.14.8" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     {% block stylesheets %}{% endblock %}
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="app-shell min-h-screen">
     {% if app.user %}
-    <nav class="bg-red-700 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-4">
-                    <a href="{{ path('app_board') }}" class="font-bold text-lg">Sidegigs</a>
-                    <a href="{{ path('app_board') }}" class="hover:text-red-200 text-sm">Board</a>
+    <nav class="app-nav" x-data="{ open: false }">
+        <div class="nav-inner">
+            <a href="{{ path('app_board') }}" class="brand" aria-label="Sidegigs, board">
+                <span class="brand-mark">S</span><span>sidegigs</span>
+            </a>
+            <button class="nav-toggle" @click="open = !open" aria-label="Otwórz menu"><span></span><span></span></button>
+            <div class="nav-links" :class="open ? 'is-open' : ''" @click="open = false">
+                <a href="{{ path('app_board') }}" class="nav-link"><span class="nav-dot"></span>Board</a>
                     {% if is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('app_user_list') }}" class="hover:text-red-200 text-sm">Users</a>
-                    <a href="{{ path('app_client_list') }}" class="hover:text-red-200 text-sm">Clients</a>
-                    <a href="{{ path('app_workflow_edit') }}" class="hover:text-red-200 text-sm">Workflow</a>
+                    <a href="{{ path('app_client_list') }}" class="nav-link">Clients</a>
+                    <a href="{{ path('app_user_list') }}" class="nav-link">Users</a>
+                    <a href="{{ path('app_workflow_edit') }}" class="nav-link">Workflow</a>
                     {% endif %}
-                </div>
-                <div class="flex items-center space-x-4">
-                    <span class="text-sm">{{ app.user.userIdentifier }}</span>
-                    <a href="{{ path('app_profile') }}" class="hover:text-red-200 text-sm">Profile</a>
-                    <a href="{{ path('app_logout') }}" class="bg-red-500 px-3 py-1 rounded text-sm hover:bg-red-600">Logout</a>
-                </div>
+                <div class="nav-account"><a href="{{ path('app_profile') }}" class="account-name">{{ app.user.userIdentifier }}</a><a href="{{ path('app_logout') }}" class="logout-link">Log out <span>↗</span></a></div>
             </div>
         </div>
     </nav>
@@ -64,5 +64,11 @@
     </div>
 
     {% block javascripts %}{% endblock %}
+    <style>
+        :root { --ink:#18232b; --paper:#f7f7f4; --card:#fff; --line:#e5e8e6; --coral:#e96b4c; --coral-dark:#cc5337; }
+        [x-cloak]{display:none!important} *{box-sizing:border-box} body{margin:0;color:var(--ink);background:var(--paper);font-family:'Manrope',sans-serif}
+        .app-nav{background:var(--ink);color:#f8faf8;position:relative;z-index:20}.nav-inner{max-width:1440px;margin:auto;min-height:74px;padding:0 28px;display:flex;align-items:center;gap:44px}.brand{color:#fff;display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.06em;text-decoration:none}.brand-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:10px 10px 10px 3px;background:var(--coral);font-size:16px;letter-spacing:0}.nav-links{display:flex;align-items:center;gap:24px;flex:1}.nav-link,.account-name,.logout-link{color:#afbcc0;font-size:12px;font-weight:700;text-decoration:none;transition:color .2s}.nav-link:hover,.account-name:hover,.logout-link:hover{color:#fff}.nav-dot{display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;background:var(--coral);vertical-align:1px}.nav-account{margin-left:auto;display:flex;align-items:center;gap:20px;padding-left:24px;border-left:1px solid #334149}.logout-link{color:#fff}.logout-link span{color:var(--coral);font-size:16px;margin-left:3px}.nav-toggle{display:none;background:none;border:0;padding:8px}.nav-toggle span{display:block;width:24px;height:2px;background:#fff;margin:5px}.page-frame{max-width:1440px;margin:auto;padding:48px 28px 72px}.eyebrow{color:var(--coral-dark);font:500 11px 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.14em}.display-title{margin:7px 0 0;font-size:clamp(30px,4vw,48px);line-height:1.05;letter-spacing:-.07em;font-weight:800}.surface{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 35px rgba(24,35,43,.045)}.btn-primary{background:var(--coral);color:#fff;border:0;border-radius:11px;padding:12px 17px;font-size:12px;font-weight:800;text-decoration:none;box-shadow:0 6px 14px rgba(233,107,76,.18);transition:transform .2s,background .2s}.btn-primary:hover{background:var(--coral-dark);transform:translateY(-1px)}.prose code{background:#eef1ef;color:var(--coral-dark);border-radius:4px;padding:2px 5px}
+        @media(max-width:700px){.nav-inner{min-height:64px;padding:0 18px;justify-content:space-between}.nav-toggle{display:block}.nav-links{display:none;position:absolute;top:64px;left:0;right:0;padding:18px;background:var(--ink);border-top:1px solid #334149;flex-direction:column;align-items:stretch;gap:0;box-shadow:0 18px 25px rgba(0,0,0,.15)}.nav-links.is-open{display:flex}.nav-link{padding:13px 4px;border-bottom:1px solid #334149}.nav-account{margin:10px 0 0;padding:14px 4px 0;border-left:0;border-top:1px solid #334149;justify-content:space-between}.page-frame{padding:28px 16px 52px}}
+    </style>
 </body>
 </html>

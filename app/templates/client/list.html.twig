@@ -1,16 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Clients{% endblock %}
+{% block title %}Clients · Sidegigs{% endblock %}
 
 {% block body %}
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="page-frame">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Clients</h1>
+        <div><div class="eyebrow">Directory / 02</div><h1 class="display-title">Clients</h1><p class="mt-3 text-sm text-gray-500">Firmy i osoby, dla których pracujesz.</p></div>
         <a href="{{ path('app_client_create') }}"
-           class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Create Client</a>
+           class="btn-primary">Add client <span class="ml-1">+</span></a>
     </div>
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="surface overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>

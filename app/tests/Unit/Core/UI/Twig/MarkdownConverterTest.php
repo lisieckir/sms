@@ -115,4 +115,10 @@ class MarkdownConverterTest extends TestCase
         $html = $this->converter->toHtml('Hello');
         $this->assertStringContainsString('<p>Hello</p>', $html);
     }
+
+    public function testPreservesSingleLineBreaks(): void
+    {
+        $html = $this->converter->toHtml("Line one\nLine two");
+        $this->assertStringContainsString("Line one<br>\nLine two", $html);
+    }
 }

@@ -16,7 +16,12 @@ final class MarkdownConverter
 
     public function __construct()
     {
-        $this->converter = new CommonMarkConverter();
+        // Keep intentional line breaks from textareas when rendering Markdown.
+        $this->converter = new CommonMarkConverter([
+            'renderer' => [
+                'soft_break' => "<br>\n",
+            ],
+        ]);
 
         $config = (new HtmlSanitizerConfig())
             ->allowSafeElements()

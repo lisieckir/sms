@@ -20,14 +20,15 @@
      })">
     {% for task in stage.tasks %}
     <a href="{{ path('app_task_show', {id: task.id}) }}"
-       class="block bg-white rounded-lg shadow-sm p-3 cursor-pointer hover:shadow-md transition-shadow"
+        class="task-card"
        data-task-id="{{ task.id }}">
-        <h4 class="font-medium text-gray-800 text-sm">{{ task.title }}</h4>
+         <div class="task-card-top"><span class="task-id">#{{ task.id|slice(0, 6) }}</span><span class="task-arrow">↗</span></div>
+         <h4 class="font-medium text-gray-800 text-sm">{{ task.title }}</h4>
         <div class="flex items-center justify-between mt-2">
             {% if task.assigneeName is defined and task.assigneeName %}
             <span class="text-xs text-gray-500">{{ task.assigneeName }}</span>
             {% endif %}
-            <span class="text-xs px-1.5 py-0.5 rounded {{ task.priority == 'critical' ? 'bg-red-100 text-red-700' : task.priority == 'high' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600' }}">
+             <span class="priority-badge {{ task.priority == 'critical' ? 'priority-critical' : task.priority == 'high' ? 'priority-high' : '' }}">
                 {{ task.priority }}
             </span>
         </div>
@@ -36,3 +37,6 @@
     <p class="text-gray-400 text-sm text-center py-8">No tasks</p>
     {% endfor %}
 </div>
+<style>
+    .task-card{display:block;background:#fff;border:1px solid #e1e6e2;border-radius:13px;padding:14px;cursor:grab;text-decoration:none;transition:transform .2s,box-shadow .2s,border-color .2s}.task-card:hover{transform:translateY(-2px);border-color:#c4d4cb;box-shadow:0 10px 20px rgba(24,35,43,.08)}.task-card-top{display:flex;justify-content:space-between;margin-bottom:10px}.task-id{color:#9aa6a2;font:500 10px 'DM Mono',monospace}.task-arrow{color:#a9b4af}.task-card h4{line-height:1.45}.priority-badge{color:#68766f;background:#eef1ef;border-radius:99px;padding:4px 8px;font:500 10px 'DM Mono',monospace;text-transform:uppercase}.priority-high{color:#b36b28;background:#fff0dc}.priority-critical{color:#c84c42;background:#ffe4e1}
+</style>
